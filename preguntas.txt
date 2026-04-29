@@ -1,1 +1,17 @@
+P: ¿Qué es lo que más te gusta de esta clase?
+R: Las actividades prácticas
+R: Las explicaciones del maestro/a
+R: El trabajo en equipo
+R: Los temas que vemos
+R: Ninguna de las anteriores
 
+P: ¿Cómo te sientes con el ritmo de la clase?
+R: Va a buen ritmo, entiendo bien todo
+R: Va muy rápido, a veces me pierdo
+R: Va un poco lento para mi gusto
+
+P: ¿Qué opinas de usar tecnología en el aula?
+R: Me encanta, hace todo más dinámico
+R: Me distrae un poco
+R: Me da igual
+R: Prefiero usar lápiz y papel
