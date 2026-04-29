@@ -1,63 +1,100 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cuestionario de Alumnos</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuestionario de Alumnos</title>
     
-  <!-- Enlace a Bootstrap 5.3.8 solicitado -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
-  <!-- FontAwesome para los íconos -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
-  <style>
-    body {             
-      background-color: #f8f9fa; /* Color de fondo suave */
-    }
+    <style>
+        body { 
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
+            background-color: #f8f9fa; 
+        }
         
-    /* --- PROTECCIÓN: Evita que se pueda seleccionar el texto --- */
-    .no-select {
-      -webkit-user-select: none; /* Safari */
-      -moz-user-select: none; /* Firefox */
-      -ms-user-select: none; /* IE10+/Edge */
-      user-select: none; /* Standard */
-    }
+        /* Protección para no seleccionar texto */
+        .no-select {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
 
-    /* Efecto al pasar el mouse por las opciones */
-    .custom-radio-box {
-      transition: all 0.2s ease-in-out;
-      position: relative;
-    }
-    .custom-radio-box:hover {
-      background-color: #e9ecef;
-    }
-    
-    /* Aseguramos que los modales estén por encima de todo */
-    .modal-overlay {
-      background-color: rgba(0, 0, 0, 0.85);
-      z-index: 1050;
-    }
-  </style>
+        .custom-radio-box {
+            transition: all 0.2s ease-in-out;
+            position: relative;
+        }
+        .custom-radio-box:hover {
+            background-color: #e9ecef;
+        }
+        
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 1050;
+        }
+    </style>
 </head>
 <body class="py-4 py-md-5 no-select text-dark">
 
-    <div class="container">
+    <div class="container" style="max-width: 800px;">
         <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
             
             <!-- Encabezado -->
             <div class="card-header bg-primary text-white text-center p-4 p-md-5 position-relative border-0 rounded-top-4">
                 <h1 class="h2 fw-bold mb-2">Cuestionario de Clase</h1>
-                <p class="mb-0 text-white-50">Por favor, completa tus datos y responde las preguntas.</p>                               
+                <p class="mb-0 text-white-50">Por favor, completa tus datos y responde las preguntas. Tus respuestas se guardarán automáticamente.</p>
+                
+                <!-- Botón de configuración -->
+                <button onclick="toggleInstructions()" class="btn btn-light btn-sm position-absolute top-0 end-0 mt-3 me-3 rounded-pill shadow-sm" title="Instrucciones para el maestro">
+                    <i class="fas fa-cog text-primary"></i> <span class="d-none d-sm-inline text-primary fw-bold ms-1">Configurar Sheets</span>
+                </button>
             </div>
 
-            <!-- Formulario -->
+            <!-- Instrucciones -->
+            <div id="instructionsPanel" class="alert alert-warning border-start border-4 border-warning rounded-0 m-0 p-4 d-none">
+                <h3 class="h5 fw-bold text-dark"><i class="fas fa-info-circle me-2"></i>Conexión con Google Sheets:</h3>
+                <ol class="mb-3 ps-3">
+                    <li class="mb-1">Crea un Google Sheets y ve a <strong>Extensiones > Apps Script</strong>.</li>
+                    <li class="mb-1">Pega este código:
+                        <pre class="bg-dark text-success p-3 rounded mt-2 overflow-x-auto small">
+function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var rowData = [
+    e.parameter.vecesSalio,
+    new Date(),
+    e.parameter.grupo,
+    e.parameter.nombres,
+    e.parameter.apellidos
+  ];
+  
+  for(var i=1; i<=50; i++) {
+    if(e.parameter['pregunta'+i]) {
+      rowData.push(e.parameter['pregunta'+i]);
+    }
+  }
+  
+  sheet.appendRow(rowData);
+  return ContentService.createTextOutput("Éxito").setMimeType(ContentService.MimeType.TEXT);
+}</pre>
+                    </li>
+                    <li class="mb-1">Ve a <strong>Implementar > Nueva implementación > Aplicación web</strong>.</li>
+                    <li class="mb-1">En "Acceso", pon <strong>Cualquier persona</strong>, autoriza y copia la URL.</li>
+                    <li class="mb-1">Pega esa URL en el archivo HTML, en <code>const scriptURL = 'AQUI_VA_TU_URL';</code>.</li>
+                </ol>
+                <button onclick="toggleInstructions()" class="btn btn-link text-dark p-0 fw-bold">Ocultar instrucciones</button>
+            </div>
+
+            <!-- Formulario Principal -->
             <form id="studentForm" class="card-body p-4 p-md-5">
                 
-                <!-- Campo oculto para mandar el contador al Google Sheets -->
+                <!-- Registro de salidas (oculto) -->
                 <input type="hidden" id="vecesSalioInput" name="vecesSalio" value="0">
 
-                <!-- Sección de Datos Personales -->
+                <!-- Datos del Alumno -->
                 <div class="bg-light p-4 rounded-3 border mb-5">
                     <h2 class="h5 fw-bold text-secondary border-bottom pb-2 mb-3">
                         <i class="fas fa-user-graduate me-2 text-primary"></i>Datos del Alumno
@@ -68,17 +105,16 @@
                             <label for="grupo" class="form-label fw-bold">Grupo / Grado *</label>
                             <select id="grupo" name="grupo" required class="form-select">
                                 <option value="" disabled selected>Selecciona tu grupo...</option>
-                                <option value="401M">401M</option>
-                                <option value="402M">402M</option>
-                                <option value="401V">401V</option>                                
+                                <option value="1A">1º A</option>
+                                <option value="1B">1º B</option>
+                                <option value="2A">2º A</option>
+                                <option value="2B">2º B</option>
                             </select>
                         </div>
-
                         <div class="col-md-6">
                             <label for="nombres" class="form-label fw-bold">Nombre(s) *</label>
                             <input type="text" id="nombres" name="nombres" required placeholder="Ej. María Fernanda" class="form-control">
                         </div>
-
                         <div class="col-md-6">
                             <label for="apellidos" class="form-label fw-bold">Apellidos *</label>
                             <input type="text" id="apellidos" name="apellidos" required placeholder="Ej. Pérez Gómez" class="form-control">
@@ -86,159 +122,17 @@
                     </div>
                 </div>
 
-                <!-- Sección de Preguntas -->
+                <!-- Contenedor dinámico de Preguntas -->
                 <div class="mb-4">
                     <h2 class="h5 fw-bold text-secondary border-bottom pb-2 mb-4">
                         <i class="fas fa-question-circle me-2 text-primary"></i>Preguntas
                     </h2>
 
-                    <!-- Pregunta 1 -->
-                    <div class="mb-4">
-                        <p class="fw-bold mb-2">1. ¿Qué es lo que más te gusta de esta clase? *</p>
-                        
-                        <div class="border rounded-3 p-3 mb-2 custom-radio-box">
-                            <div class="form-check m-0">
-                                <input class="form-check-input" type="radio" name="pregunta1" id="p1_o1" value="Las actividades prácticas" required>
-                                <label class="form-check-label stretched-link w-100" for="p1_o1">Las actividades prácticas</label>
-                            </div>
-                        </div>
-                        <div class="border rounded-3 p-3 mb-2 custom-radio-box">
-                            <div class="form-check m-0">
-                                <input class="form-check-input" type="radio" name="pregunta1" id="p1_o2" value="Las explicaciones del maestro/a">
-                                <label class="form-check-label stretched-link w-100" for="p1_o2">Las explicaciones del maestro/a</label>
-                            </div>
-                        </div>
-                        <div class="border rounded-3 p-3 mb-2 custom-radio-box">
-                            <div class="form-check m-0">
-                                <input class="form-check-input" type="radio" name="pregunta1" id="p1_o3" value="El trabajo en equipo">
-                                <label class="form-check-label stretched-link w-100" for="p1_o3">El trabajo en equipo</label>
-                            </div>
-                        </div>
-                        <div class="border rounded-3 p-3 mb-2 custom-radio-box">
-                            <div class="form-check m-0">
-                                <input class="form-check-input" type="radio" name="pregunta1" id="p1_o4" value="Los temas que vemos">
-                                <label class="form-check-label stretched-link w-100" for="p1_o4">Los temas que vemos</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Pregunta 2 -->
-                    <div class="mb-4">
-                        <p class="fw-bold mb-2">2. ¿Cómo te sientes con el ritmo de la clase? *</p>
-                        
-                        <div class="border rounded-3 p-3 mb-2 custom-radio-box">
-                            <div class="form-check m-0">
-                                <input class="form-check-input" type="radio" name="pregunta2" id="p2_o1" value="Va a buen ritmo, entiendo bien todo" required>
-                                <label class="form-check-label stretched-link w-100" for="p2_o1">Va a buen ritmo, entiendo bien todo</label>
-                            </div>
-                        </div>
-                        <div class="border rounded-3 p-3 mb-2 custom-radio-box">
-                            <div class="form-check m-0">
-                                <input class="form-check-input" type="radio" name="pregunta2" id="p2_o2" value="Va muy rápido, a veces me pierdo">
-                                <label class="form-check-label stretched-link w-100" for="p2_o2">Va muy rápido, a veces me pierdo</label>
-                            </div>
-                        </div>
-                        <div class="border rounded-3 p-3 mb-2 custom-radio-box">
-                            <div class="form-check m-0">
-                                <input class="form-check-input" type="radio" name="pregunta2" id="p2_o3" value="Va un poco lento para mi gusto">
-                                <label class="form-check-label stretched-link w-100" for="p2_o3">Va un poco lento para mi gusto</label>
-                            </div>
-                        </div>
-                        <div class="border rounded-3 p-3 mb-2 custom-radio-box">
-                            <div class="form-check m-0">
-                                <input class="form-check-input" type="radio" name="pregunta2" id="p2_o4" value="A veces rápido y a veces lento">
-                                <label class="form-check-label stretched-link w-100" for="p2_o4">A veces rápido y a veces lento</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Pregunta 3 -->
-                    <div class="mb-4">
-                        <p class="fw-bold mb-2">3. ¿Cómo evaluarías tu propio esfuerzo este mes? *</p>
-                        
-                        <div class="border rounded-3 p-3 mb-2 custom-radio-box">
-                            <div class="form-check m-0">
-                                <input class="form-check-input" type="radio" name="pregunta3" id="p3_o1" value="Excelente, di mi 100%" required>
-                                <label class="form-check-label stretched-link w-100" for="p3_o1">Excelente, di mi 100%</label>
-                            </div>
-                        </div>
-                        <div class="border rounded-3 p-3 mb-2 custom-radio-box">
-                            <div class="form-check m-0">
-                                <input class="form-check-input" type="radio" name="pregunta3" id="p3_o2" value="Bueno, pero sé que puedo mejorar">
-                                <label class="form-check-label stretched-link w-100" for="p3_o2">Bueno, pero sé que puedo mejorar</label>
-                            </div>
-                        </div>
-                        <div class="border rounded-3 p-3 mb-2 custom-radio-box">
-                            <div class="form-check m-0">
-                                <input class="form-check-input" type="radio" name="pregunta3" id="p3_o3" value="Regular, me distraje en algunas clases">
-                                <label class="form-check-label stretched-link w-100" for="p3_o3">Regular, me distraje en algunas clases</label>
-                            </div>
-                        </div>
-                        <div class="border rounded-3 p-3 mb-2 custom-radio-box">
-                            <div class="form-check m-0">
-                                <input class="form-check-input" type="radio" name="pregunta3" id="p3_o4" value="Malo, necesito aplicarme mucho más">
-                                <label class="form-check-label stretched-link w-100" for="p3_o4">Malo, necesito aplicarme mucho más</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Pregunta 4 -->
-                    <div class="mb-4">
-                        <p class="fw-bold mb-2">4. ¿Qué te ayudaría a aprender mejor los temas? *</p>
-                        
-                        <div class="border rounded-3 p-3 mb-2 custom-radio-box">
-                            <div class="form-check m-0">
-                                <input class="form-check-input" type="radio" name="pregunta4" id="p4_o1" value="Más juegos y dinámicas en clase" required>
-                                <label class="form-check-label stretched-link w-100" for="p4_o1">Más juegos y dinámicas en clase</label>
-                            </div>
-                        </div>
-                        <div class="border rounded-3 p-3 mb-2 custom-radio-box">
-                            <div class="form-check m-0">
-                                <input class="form-check-input" type="radio" name="pregunta4" id="p4_o2" value="Más ejemplos de la vida real">
-                                <label class="form-check-label stretched-link w-100" for="p4_o2">Más ejemplos de la vida real</label>
-                            </div>
-                        </div>
-                        <div class="border rounded-3 p-3 mb-2 custom-radio-box">
-                            <div class="form-check m-0">
-                                <input class="form-check-input" type="radio" name="pregunta4" id="p4_o3" value="Más tiempo para hacer mis apuntes">
-                                <label class="form-check-label stretched-link w-100" for="p4_o3">Más tiempo para hacer mis apuntes</label>
-                            </div>
-                        </div>
-                        <div class="border rounded-3 p-3 mb-2 custom-radio-box">
-                            <div class="form-check m-0">
-                                <input class="form-check-input" type="radio" name="pregunta4" id="p4_o4" value="Trabajar más seguido en equipos">
-                                <label class="form-check-label stretched-link w-100" for="p4_o4">Trabajar más seguido en equipos</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Pregunta 5 -->
-                    <div class="mb-4">
-                        <p class="fw-bold mb-2">5. ¿Cómo prefieres que se evalúe lo aprendido? *</p>
-                        
-                        <div class="border rounded-3 p-3 mb-2 custom-radio-box">
-                            <div class="form-check m-0">
-                                <input class="form-check-input" type="radio" name="pregunta5" id="p5_o1" value="Con exámenes o pruebas cortas" required>
-                                <label class="form-check-label stretched-link w-100" for="p5_o1">Con exámenes o pruebas cortas</label>
-                            </div>
-                        </div>
-                        <div class="border rounded-3 p-3 mb-2 custom-radio-box">
-                            <div class="form-check m-0">
-                                <input class="form-check-input" type="radio" name="pregunta5" id="p5_o2" value="Con proyectos o maquetas creativas">
-                                <label class="form-check-label stretched-link w-100" for="p5_o2">Con proyectos o maquetas creativas</label>
-                            </div>
-                        </div>
-                        <div class="border rounded-3 p-3 mb-2 custom-radio-box">
-                            <div class="form-check m-0">
-                                <input class="form-check-input" type="radio" name="pregunta5" id="p5_o3" value="Con exposiciones frente al grupo">
-                                <label class="form-check-label stretched-link w-100" for="p5_o3">Con exposiciones frente al grupo</label>
-                            </div>
-                        </div>
-                        <div class="border rounded-3 p-3 mb-2 custom-radio-box">
-                            <div class="form-check m-0">
-                                <input class="form-check-input" type="radio" name="pregunta5" id="p5_o4" value="Con tareas e investigaciones en casa">
-                                <label class="form-check-label stretched-link w-100" for="p5_o4">Con tareas e investigaciones en casa</label>
-                            </div>
+                    <div id="preguntasContainer">
+                        <!-- El script llenará esto usando el archivo TXT -->
+                        <div class="text-center p-4" id="cargandoIndicador">
+                            <i class="fas fa-circle-notch fa-spin fa-2x text-primary mb-3"></i>
+                            <p class="text-muted fw-bold">Cargando preguntas...</p>
                         </div>
                     </div>
                 </div>
@@ -254,7 +148,7 @@
         </div>
     </div>
 
-    <!-- Mensaje modal de advertencia de captura -->
+    <!-- Advertencia Captura -->
     <div id="screenshotWarning" class="position-fixed top-0 start-0 w-100 h-100 modal-overlay d-none flex-column justify-content-center align-items-center p-4 text-center">
         <i class="fas fa-exclamation-triangle text-warning display-1 mb-4"></i>
         <h2 class="text-white fw-bold mb-3">Acción no permitida</h2>
@@ -262,108 +156,140 @@
         <button onclick="document.getElementById('screenshotWarning').classList.replace('d-flex', 'd-none')" class="btn btn-primary btn-lg mt-4 px-5">Entendido</button>
     </div>
 
-    <!-- Mensaje modal de advertencia por cambiar de pestaña -->
+    <!-- Advertencia Cambio Pestaña -->
     <div id="leaveWarning" class="position-fixed top-0 start-0 w-100 h-100 modal-overlay d-none flex-column justify-content-center align-items-center p-4 text-center">
         <i class="fas fa-eye-slash text-warning display-1 mb-4"></i>
-        <h2 class="text-white fw-bold mb-3">¡Oye, te saliste de la página!</h2>
-        <p class="text-light fs-5 max-w-50">Tronix! Por favor, mantente en esta pantalla hasta que termines de contestar.</p>
+        <h2 class="text-white fw-bold mb-3">¡Te saliste de la página!</h2>
+        <p class="text-light fs-5 max-w-50">Detectamos que saliste del formulario o cambiaste de pestaña. Por favor, mantente en esta pantalla.</p>
         <button onclick="dismissLeaveWarning()" class="btn btn-primary btn-lg mt-4 px-5">Entendido, regresaré al cuestionario</button>
     </div>
 
-    <!-- Script de Bootstrap solicitado -->
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 
     <script>
-        // --- CONFIGURACIÓN IMPORTANTE ---
-        // Pega aquí la URL que obtengas de Google Apps Script 
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbwDngrvcM0a79hdpI1YodnUk-qYGK4zAcAgzCU_APbeO27dXvuO6sPeyw6Og4FUSvSb/exec'; 
-        // --------------------------------
+        // --- CONFIGURACIÓN ---
+        const scriptURL = 'AQUI_VA_TU_URL'; // <-- Pega tu URL de Google Sheets aquí
+        const archivoPreguntas = 'preguntas.txt'; // <-- Nombre de tu archivo txt
+        // ---------------------
 
-        // Contador de veces que el alumno se sale
+        // LECTURA DEL ARCHIVO TXT
+        async function cargarPreguntas() {
+            try {
+                const response = await fetch(archivoPreguntas);
+                if (!response.ok) throw new Error('Archivo no encontrado');
+                
+                const text = await response.text();
+                const lineas = text.split('\n');
+                let htmlContent = '';
+                let numPregunta = 0;
+                let numOpcion = 0;
+
+                lineas.forEach(linea => {
+                    linea = linea.trim();
+                    if (!linea) return; // Ignorar líneas en blanco
+                    
+                    if (linea.startsWith('P:')) {
+                        numPregunta++;
+                        numOpcion = 0;
+                        
+                        if (numPregunta > 1) htmlContent += '</div>';
+                        
+                        const textoPregunta = linea.substring(2).trim();
+                        htmlContent += `
+                        <div class="mb-4">
+                            <p class="fw-bold mb-2">${numPregunta}. ${textoPregunta} *</p>
+                        `;
+                    } else if (linea.startsWith('R:')) {
+                        numOpcion++;
+                        const textoOpcion = linea.substring(2).trim();
+                        const idOpcion = `p${numPregunta}_o${numOpcion}`;
+                        htmlContent += `
+                        <div class="border rounded-3 p-3 mb-2 custom-radio-box">
+                            <div class="form-check m-0">
+                                <input class="form-check-input" type="radio" name="pregunta${numPregunta}" id="${idOpcion}" value="${textoOpcion}" required>
+                                <label class="form-check-label stretched-link w-100" for="${idOpcion}">${textoOpcion}</label>
+                            </div>
+                        </div>
+                        `;
+                    }
+                });
+                
+                if (numPregunta > 0) htmlContent += '</div>';
+                
+                const container = document.getElementById('preguntasContainer');
+                if (htmlContent) {
+                    container.innerHTML = htmlContent;
+                } else {
+                    container.innerHTML = '<p class="text-danger">El archivo está vacío o sin formato.</p>';
+                }
+            } catch (error) {
+                console.error(error);
+                document.getElementById('preguntasContainer').innerHTML = `
+                    <div class="alert alert-danger shadow-sm">
+                        Error al cargar las preguntas. Revisa que <strong>${archivoPreguntas}</strong> esté junto al HTML y ábrelo desde un servidor web (no doble clic).
+                    </div>`;
+            }
+        }
+
+        cargarPreguntas();
+
+        // SISTEMA DE ADVERTENCIAS Y CONTADOR
         let leaveCount = 0;
 
         function dismissLeaveWarning() {
-            // Ocultar la advertencia
             document.getElementById('leaveWarning').classList.replace('d-flex', 'd-none');
-            
-            // Sumar una salida al contador
             leaveCount++;
-            
-            // Actualizar el valor del campo oculto que se mandará a Google Sheets
             document.getElementById('vecesSalioInput').value = leaveCount;
-            
-            // Actualizar el texto del botón enviar
             const textoVez = leaveCount === 1 ? 'vez' : 'veces';
-            document.getElementById('submitBtn').innerHTML = `Enviar mis respuestas (Te saliste ${leaveCount} ${textoVez}) <i class="fas fa-paper-plane ms-2"></i>`;
+            document.getElementById('submitBtn').innerHTML = `Enviar (Te saliste ${leaveCount} ${textoVez}) <i class="fas fa-paper-plane ms-2"></i>`;
         }
 
-        // --- SISTEMA DE PROTECCIÓN ANTICOPIA ---
-        
-        // 1. Deshabilitar click derecho
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
+        document.addEventListener('contextmenu', e => e.preventDefault());
 
-        // 2. Deshabilitar atajos de teclado para copiar, imprimir o guardar
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && (e.key === 'c' || e.key === 'C' || e.key === 'p' || e.key === 'P' || e.key === 's' || e.key === 'S')) {
+        document.addEventListener('keydown', e => {
+            if (e.ctrlKey && ['c', 'C', 'p', 'P', 's', 'S'].includes(e.key)) {
                 e.preventDefault();
                 mostrarAdvertencia('screenshotWarning');
             }
         });
 
-        // 3. Detectar la tecla "Imprimir Pantalla"
-        document.addEventListener('keyup', function(e) {
+        document.addEventListener('keyup', e => {
             if (e.key === 'PrintScreen') {
                 navigator.clipboard.writeText(''); 
                 mostrarAdvertencia('screenshotWarning');
             }
         });
 
-        // 4. Detectar si el alumno cambia de pestaña o minimiza
-        document.addEventListener('visibilitychange', function() {
-            if (document.hidden) {
-                mostrarAdvertencia('leaveWarning');
-            }
-        });
-
-        // 5. Detectar si la ventana pierde el enfoque
-        window.addEventListener('blur', function() {
-            mostrarAdvertencia('leaveWarning');
-        });
+        document.addEventListener('visibilitychange', () => { if (document.hidden) mostrarAdvertencia('leaveWarning'); });
+        window.addEventListener('blur', () => mostrarAdvertencia('leaveWarning'));
 
         function mostrarAdvertencia(id) {
             const modal = document.getElementById(id);
             modal.classList.remove('d-none');
             modal.classList.add('d-flex');
         }
-        // ----------------------------------------
 
+        // ENVÍO DE DATOS A GOOGLE SHEETS
         const form = document.getElementById('studentForm');
         const submitBtn = document.getElementById('submitBtn');
         const statusMessage = document.getElementById('statusMessage');
 
         function toggleInstructions() {
-            const panel = document.getElementById('instructionsPanel');
-            panel.classList.toggle('d-none');
+            document.getElementById('instructionsPanel').classList.toggle('d-none');
         }
 
         function showMessage(text, isError = false) {
             statusMessage.textContent = text;
             statusMessage.classList.remove('d-none', 'alert-success', 'alert-danger');
-            
-            if (isError) {
-                statusMessage.classList.add('alert-danger');
-            } else {
-                statusMessage.classList.add('alert-success');
-            }
+            statusMessage.classList.add(isError ? 'alert-danger' : 'alert-success');
         }
 
         form.addEventListener('submit', e => {
             e.preventDefault();
             
             if(scriptURL === 'AQUI_VA_TU_URL') {
-                showMessage('⚠️ El formulario está en modo de prueba. Falta configurar la URL de Google Sheets.', true);
+                showMessage('⚠️ Modo prueba. Falta configurar la URL de Sheets.', true);
                 return;
             }
 
@@ -378,22 +304,17 @@
                 body: new FormData(form),
                 mode: 'no-cors' 
             })
-            .then(response => {
-                showMessage('¡Gracias! Tus respuestas se han guardado correctamente.');
+            .then(() => {
+                showMessage('¡Tus respuestas se han guardado!');
                 form.reset(); 
-                
-                // Reiniciamos el contador y su campo oculto al enviarlo
                 leaveCount = 0;
                 document.getElementById('vecesSalioInput').value = leaveCount;
-                
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = 'Enviar mis respuestas <i class="fas fa-paper-plane ms-2"></i>';
                 submitBtn.classList.replace('btn-secondary', 'btn-primary');
             })
-            .catch(error => {
-                console.error('Error!', error.message);
-                showMessage('Hubo un problema al enviar las respuestas. Por favor, intenta de nuevo.', true);
-                
+            .catch(() => {
+                showMessage('Hubo un problema. Por favor, intenta de nuevo.', true);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnHtml;
                 submitBtn.classList.replace('btn-secondary', 'btn-primary');
