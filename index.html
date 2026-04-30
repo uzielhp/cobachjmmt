@@ -1,1 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuestionario de Alumnos</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
+            background-color: #f8f9fa; 
+        }
+        
+        /* Protección para no seleccionar texto */
+        .no-select {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
 
+        .custom-radio-box {
+            transition: all 0.2s ease-in-out;
+            position: relative;
+        }
+        .custom-radio-box:hover {
+            background-color: #e9ecef;
+        }
+        
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 1050;
+        }
+    </style>
+</head>
+<body class="py-4 py-md-5 no-select text-dark">
+
+    <div class="container" style="max-width: 800px;">
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+            
+            <div class="card-header bg-primary text-white text-center p-4 p-md-5 position-relative border-0 rounded-top-4">
+                <h1 class="h2 fw-bold mb-2">Cuestionario de Clase</h1>
+                <p class="mb-0 text-white-50">Por favor, completa tus datos y responde las preguntas. Tus respuestas se guardarán automáticamente.</p>
+                
+                <button onclick="toggleInstructions()" class="btn btn-light btn-sm position-absolute top-0 end-0 mt-3 me-3 rounded-pill shadow-sm" title="Instrucciones para el maestro">
+                    <i class="fas fa-cog text-primary"></i> <span class="d-none d-sm-inline text-primary fw-bold ms-1">Configurar Sheets</span>
+                </button>
+            </div>
+
+            <div id="instructionsPanel" class="alert alert-warning border-start border-4 border-warning rounded-0 m-0 p-4 d-none">
+                <h3 class="h5 fw-bold text-dark"><i class="fas fa-info-circle me-2"></i>Conexión con Google Sheets:</h3>
+                <ol class="mb-3 ps-3">
+                    <li class="mb-1">Crea un Google Sheets con <strong>dos pestañas (hojas)</strong> abajo: Una llamada <strong>Respuestas</strong> y otra <strong>Preguntas</strong>.</li>
+                    <li class="mb-1">En la pestaña <strong>Preguntas</strong>, organiza así: <strong>Columna A:</strong> La pregunta. <strong>Columna B:</strong> La respuesta correcta exacta. <strong>Columna C en adelante:</strong> Las opciones para elegir.</li>
+                    <li class="mb-1">Ve a <strong>Extensiones > Apps Script</strong>, borra lo que haya y pega esto:
+                        <pre class="bg-dark text-success p-3 rounded mt-2 overflow-x-auto small">
+function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Respuestas") || SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  var rowData = [
+    e.parameter.vecesSalio,     // Columna 1: Veces que salió
+    e.parameter.totalCorrectas, // Columna 2: Total de respuestas correctas
+    new Date(),                 // Columna 3: Fecha
+    e.parameter.grupo,          // Columna 4: Grupo
+    e.parameter.nombres,        // Columna 5: Nombres
+    e.parameter.apellidos       // Columna 6: Apellidos
+  ];
+  
+  var evalResults = []; // Guardaremos si fue correcta o incorrecta
+  
+  for(var i=1; i<=50; i++) {
+    if(e.parameter['pregunta'+i]) {
+      rowData.push(e.parameter['pregunta'+i]);
+      evalResults.push(e.parameter['eval_pregunta'+i]);
+    }
+  }
+  
+  // Guardamos la fila
+  sheet.appendRow(rowData);
+  
+  // Pintamos las celdas de colores
+  var lastRow = sheet.getLastRow();
+  for(var j=0; j<evalResults.length; j++) {
+    // Las respuestas empiezan en la columna 7 (G)
+    var cell = sheet.getRange(lastRow, 7 + j);
+    if(evalResults[j] === 'correcta') {
+      cell.setBackground('#d4edda'); // Verde clarito
+    } else if(evalResults[j] === 'incorrecta') {
+      cell.setBackground('#f8d7da'); // Rojo clarito
+    }
+  }
+  
+  return ContentService.createTextOutput("Éxito").setMimeType(ContentService.MimeType.TEXT);
+}
+
+function doGet(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Preguntas") || SpreadsheetApp.getActiveSpreadsheet().getSheets()[1];
+  var data = sheet.getDataRange().getValues();
+  return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
+}</pre>
+                    </li>
+                    <li class="mb-1">Ve a <strong>Implementar > Gestionar implementaciones</strong>, edita tu aplicación web creando una nueva versión y guarda.</li>
+                    <li class="mb-1">Asegúrate de tener la URL pegada abajo en <code>const scriptURL = 'AQUI_VA_TU_URL';</code>.</li>
+                </ol>
+                <button onclick="toggleInstructions()" class="btn btn-link text-dark p-0 fw-bold">Ocultar instrucciones</button>
+            </div>
+
+            <form id="studentForm" class="card-body p-4 p-md-5">
+                
+                <input type="hidden" id="vecesSalioInput" name="vecesSalio" value="0">
+
+                <div class="bg-light p-4 rounded-3 border mb-5">
+                    <h2 class="h5 fw-bold text-secondary border-bottom pb-2 mb-3">
+                        <i class="fas fa-user-graduate me-2 text-primary"></i>Datos del Alumno
+                    </h2>
+                    
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label for="grupo" class="form-label fw-bold">Grupo / Grado *</label>
+                            <select id="grupo" name="grupo" required class="form-select">
+                                <option value="" disabled selected>Selecciona tu grupo...</option>
+                                <option value="1A">1º A</option>
+                                <option value="1B">1º B</option>
+                                <option value="2A">2º A</option>
+                                <option value="2B">2º B</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="nombres" class="form-label fw-bold">Nombre(s) *</label>
+                            <input type="text" id="nombres" name="nombres" required placeholder="Ej. María Fernanda" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="apellidos" class="form-label fw-bold">Apellidos *</label>
+                            <input type="text" id="apellidos" name="apellidos" required placeholder="Ej. Pérez Gómez" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h2 class="h5 fw-bold text-secondary border-bottom pb-2 mb-4">
+                        <i class="fas fa-question-circle me-2 text-primary"></i>Preguntas
+                    </h2>
+
+                    <div id="preguntasContainer">
+                        <div class="text-center p-4" id="cargandoIndicador">
+                            <i class="fas fa-circle-notch fa-spin fa-2x text-primary mb-3"></i>
+                            <p class="text-muted fw-bold">Cargando preguntas...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="statusMessage" class="alert d-none text-center fw-bold" role="alert"></div>
+
+                <button type="submit" id="submitBtn" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm py-3 mt-3">
+                    Enviar mis respuestas <i class="fas fa-paper-plane ms-2"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="screenshotWarning" class="position-fixed top-0 start-0 w-100 h-100 modal-overlay d-none flex-column justify-content-center align-items-center p-4 text-center">
+        <i class="fas fa-exclamation-triangle text-warning display-1 mb-4"></i>
+        <h2 class="text-white fw-bold mb-3">Acción no permitida</h2>
+        <p class="text-light fs-5 max-w-50">Por motivos de seguridad académica, no está permitido hacer capturas de pantalla, copiar o imprimir este formulario.</p>
+        <button onclick="document.getElementById('screenshotWarning').classList.replace('d-flex', 'd-none')" class="btn btn-primary btn-lg mt-4 px-5">Entendido</button>
+    </div>
+
+    <div id="leaveWarning" class="position-fixed top-0 start-0 w-100 h-100 modal-overlay d-none flex-column justify-content-center align-items-center p-4 text-center">
+        <i class="fas fa-eye-slash text-warning display-1 mb-4"></i>
+        <h2 class="text-white fw-bold mb-3">¡Te saliste de la página!</h2>
+        <p class="text-light fs-5 max-w-50">Detectamos que saliste del formulario o cambiaste de pestaña. Por favor, mantente en esta pantalla.</p>
+        <button onclick="dismissLeaveWarning()" class="btn btn-primary btn-lg mt-4 px-5">Entendido, regresaré al cuestionario</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+
+    <script>
+        // --- CONFIGURACIÓN ---
+        const scriptURL = 'AQUI_VA_TU_URL'; // <-- Pega tu URL de Google Sheets aquí
+        // ---------------------
+
+        // Guardamos las respuestas correctas en memoria para calcular calificación
+        let respuestasCorrectas = {};
+        
+        // Bandera para saber si el examen ya se envió y detener las advertencias
+        let examenTerminado = false;
+
+        // Función para revolver (mezclar) un arreglo de forma aleatoria
+        function revolverArreglo(arreglo) {
+            for (let i = arreglo.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arreglo[i], arreglo[j]] = [arreglo[j], arreglo[i]];
+            }
+            return arreglo;
+        }
+
+        // LECTURA DE PREGUNTAS DESDE GOOGLE SHEETS
+        async function cargarPreguntas() {
+            if (scriptURL === 'AQUI_VA_TU_URL') {
+                mostrarPreguntasPrueba();
+                return;
+            }
+
+            try {
+                const response = await fetch(scriptURL);
+                if (!response.ok) throw new Error('No se pudo conectar con Sheets');
+                
+                const data = await response.json();
+                let htmlContent = '';
+                let numPregunta = 0;
+
+                // Si la primera fila tiene encabezados saltamos
+                const inicio = (data.length > 0 && data[0][0].toString().toLowerCase().includes('pregunta')) ? 1 : 0;
+
+                for (let i = inicio; i < data.length; i++) {
+                    const fila = data[i];
+                    if (!fila[0]) continue; // Columna A vacía
+
+                    numPregunta++;
+                    const textoPregunta = fila[0]; 
+                    
+                    // Guardamos la respuesta correcta (Columna B)
+                    if(fila[1]) {
+                        respuestasCorrectas['pregunta' + numPregunta] = fila[1].toString().trim().toLowerCase();
+                    }
+                    
+                    htmlContent += `
+                    <div class="mb-4">
+                        <p class="fw-bold mb-2">${numPregunta}. ${textoPregunta} *</p>
+                    `;
+
+                    // Extraemos las opciones a un arreglo temporal (Columna C en adelante)
+                    let opcionesTemporales = [];
+                    for (let j = 2; j < fila.length; j++) {
+                        if (fila[j]) opcionesTemporales.push(fila[j]);
+                    }
+
+                    // Revolvemos las opciones aleatoriamente
+                    opcionesTemporales = revolverArreglo(opcionesTemporales);
+
+                    // Generamos el HTML con las opciones ya revueltas
+                    let numOpcion = 0;
+                    for (let k = 0; k < opcionesTemporales.length; k++) {
+                        const textoOpcion = opcionesTemporales[k];
+                        numOpcion++;
+                        const idOpcion = `p${numPregunta}_o${numOpcion}`;
+                        
+                        // SOLUCIÓN: Reemplazamos las comillas dobles por código HTML
+                        const valorSeguro = textoOpcion.toString().replace(/"/g, '&quot;');
+
+                        htmlContent += `
+                        <div class="border rounded-3 p-3 mb-2 custom-radio-box">
+                            <div class="form-check m-0">
+                                <input class="form-check-input" type="radio" name="pregunta${numPregunta}" id="${idOpcion}" value="${valorSeguro}" required>
+                                <label class="form-check-label stretched-link w-100" for="${idOpcion}">${textoOpcion}</label>
+                            </div>
+                        </div>
+                        `;
+                    }
+                    htmlContent += `</div>`;
+                }
+                
+                const container = document.getElementById('preguntasContainer');
+                if (htmlContent) {
+                    container.innerHTML = htmlContent;
+                } else {
+                    container.innerHTML = '<p class="text-danger">Tu hoja de "Preguntas" parece estar vacía o no tiene el formato correcto.</p>';
+                }
+            } catch (error) {
+                console.error('Error conectando con Google Sheets:', error);
+                document.getElementById('preguntasContainer').innerHTML = `
+                    <div class="alert alert-danger shadow-sm">
+                        Ocurrió un error al cargar las preguntas. ¿Pegaste bien la URL y diste permisos a "Cualquier persona"?
+                    </div>`;
+                mostrarPreguntasPrueba(); 
+            }
+        }
+
+        // Función de respaldo 
+        function mostrarPreguntasPrueba() {
+            console.warn('Cargando preguntas de prueba.');
+            
+            respuestasCorrectas['pregunta1'] = 'la palabra "hola"';
+
+            let opcionesPrueba = ['La palabra "Hola"', 'Ninguna'];
+            opcionesPrueba = revolverArreglo(opcionesPrueba);
+
+            document.getElementById('preguntasContainer').innerHTML = `
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-info-circle me-2"></i> Estás viendo preguntas de prueba porque aún no has puesto tu <strong>scriptURL</strong>.
+                </div>
+                <div class="mb-4">
+                    <p class="fw-bold mb-2">1. ¿Qué palabra tiene comillas? *</p>
+                    <div class="border rounded-3 p-3 mb-2 custom-radio-box"><div class="form-check m-0"><input class="form-check-input" type="radio" name="pregunta1" id="p1_o1" value="${opcionesPrueba[0].replace(/"/g, '&quot;')}" required><label class="form-check-label stretched-link w-100" for="p1_o1">${opcionesPrueba[0]}</label></div></div>
+                    <div class="border rounded-3 p-3 mb-2 custom-radio-box"><div class="form-check m-0"><input class="form-check-input" type="radio" name="pregunta1" id="p1_o2" value="${opcionesPrueba[1].replace(/"/g, '&quot;')}" required><label class="form-check-label stretched-link w-100" for="p1_o2">${opcionesPrueba[1]}</label></div></div>
+                </div>
+            `;
+        }
+
+        cargarPreguntas();
+
+        // SISTEMA DE ADVERTENCIAS Y CONTADOR
+        let leaveCount = 0;
+
+        function dismissLeaveWarning() {
+            document.getElementById('leaveWarning').classList.replace('d-flex', 'd-none');
+            leaveCount++;
+            document.getElementById('vecesSalioInput').value = leaveCount;
+            const textoVez = leaveCount === 1 ? 'vez' : 'veces';
+            document.getElementById('submitBtn').innerHTML = `Enviar (Te saliste ${leaveCount} ${textoVez}) <i class="fas fa-paper-plane ms-2"></i>`;
+        }
+
+        document.addEventListener('contextmenu', e => { if(!examenTerminado) e.preventDefault(); });
+
+        document.addEventListener('keydown', e => {
+            if (examenTerminado) return; // Ya no bloquear si terminó
+            if (e.ctrlKey && ['c', 'C', 'p', 'P', 's', 'S'].includes(e.key)) {
+                e.preventDefault();
+                mostrarAdvertencia('screenshotWarning');
+            }
+        });
+
+        document.addEventListener('keyup', e => {
+            if (examenTerminado) return; // Ya no bloquear si terminó
+            if (e.key === 'PrintScreen') {
+                navigator.clipboard.writeText(''); 
+                mostrarAdvertencia('screenshotWarning');
+            }
+        });
+
+        document.addEventListener('visibilitychange', () => { 
+            if (examenTerminado) return;
+            if (document.hidden) mostrarAdvertencia('leaveWarning'); 
+        });
+        
+        window.addEventListener('blur', () => {
+            if (examenTerminado) return;
+            mostrarAdvertencia('leaveWarning');
+        });
+
+        function mostrarAdvertencia(id) {
+            const modal = document.getElementById(id);
+            modal.classList.remove('d-none');
+            modal.classList.add('d-flex');
+        }
+
+        // ENVÍO DE DATOS A GOOGLE SHEETS
+        const form = document.getElementById('studentForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const statusMessage = document.getElementById('statusMessage');
+
+        function toggleInstructions() {
+            document.getElementById('instructionsPanel').classList.toggle('d-none');
+        }
+
+        function showMessage(text, isError = false) {
+            statusMessage.textContent = text;
+            statusMessage.classList.remove('d-none', 'alert-success', 'alert-danger');
+            statusMessage.classList.add(isError ? 'alert-danger' : 'alert-success');
+        }
+
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            
+            if(scriptURL === 'AQUI_VA_TU_URL') {
+                showMessage('⚠️ Modo prueba. Falta configurar la URL de Sheets.', true);
+                return;
+            }
+
+            const originalBtnHtml = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin me-2"></i> Guardando y calificando...';
+            submitBtn.classList.replace('btn-primary', 'btn-secondary');
+            statusMessage.classList.add('d-none');
+
+            // --- CÁLCULO DE CALIFICACIÓN Y ESTADOS ---
+            const formData = new FormData(form);
+            let aciertos = 0;
+
+            for (const [preguntaKey, respuestaCorrecta] of Object.entries(respuestasCorrectas)) {
+                const respuestaAlumno = formData.get(preguntaKey);
+                
+                // Evaluamos si es correcta o incorrecta
+                if (respuestaAlumno && respuestaAlumno.toString().trim().toLowerCase() === respuestaCorrecta) {
+                    aciertos++;
+                    // Mandamos una etiqueta indicando que la tuvo bien
+                    formData.append('eval_' + preguntaKey, 'correcta');
+                } else {
+                    // Mandamos una etiqueta indicando que se equivocó
+                    formData.append('eval_' + preguntaKey, 'incorrecta');
+                }
+            }
+            
+            formData.append('totalCorrectas', aciertos);
+            // -------------------------------
+
+            fetch(scriptURL, { 
+                method: 'POST', 
+                body: formData,
+                mode: 'no-cors' 
+            })
+            .then(() => {
+                examenTerminado = true; // El examen ha finalizado oficialmente
+                
+                showMessage(`¡Tus respuestas se han guardado! Obtuviste ${aciertos} acierto(s).`);
+                
+                // Deshabilitamos todo para evitar reenvíos
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = 'Examen finalizado <i class="fas fa-check-circle ms-2"></i>';
+                submitBtn.classList.replace('btn-secondary', 'btn-success');
+                
+                // Opcional: Bloquear todos los inputs de opciones para que no se puedan seguir moviendo
+                const inputs = form.querySelectorAll('input, select');
+                inputs.forEach(input => input.disabled = true);
+            })
+            .catch(() => {
+                showMessage('Hubo un problema. Por favor, intenta de nuevo.', true);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnHtml;
+                submitBtn.classList.replace('btn-secondary', 'btn-primary');
+            });
+        });
+    </script>
+</body>
+</html>
