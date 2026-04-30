@@ -38,12 +38,13 @@
 <body class="py-4 py-md-5 no-select text-dark">
 
   <div class="container">
-    <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
-
-      <div class="card-header bg-primary text-white text-center p-2 p-md-2 position-relative border-0 rounded-top-4">      
-        <h1 class="h2 fw-bold mb-2">Cuestionario de Clase</h1>
-        <p class="mb-0 text-white-50">Por favor, completa tus datos y responde las preguntas.</p>
-      </div>
+    <div class="card shadow-lg border-0 rounded-4 overflow-hidden">      
+      
+      <div class="card-header text-bg-primary text-center rounded-top-4">
+        <h1>Examen</h1>
+        <hr>
+        <p>Por favor, completa tus datos y responde las preguntas.</p>
+      </div>      
 
       <form id="studentForm" class="card-body p-4 p-md-5">
 
@@ -124,8 +125,8 @@
 
   <script>
     // --- CONFIGURACIÓN ---
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbwUk3_Mkt-_Xgz7jL_bqKZNHxFi8ptwyfZBVZI7JiexO9dlqEQzZ1Lm5ycmkVL5PRKI/exec';
-
+    //const scriptURL = 'https://script.google.com/macros/s/AKfycbwUk3_Mkt-_Xgz7jL_bqKZNHxFi8ptwyfZBVZI7JiexO9dlqEQzZ1Lm5ycmkVL5PRKI/exec';
+    const scriptURL = "";
     // Guardamos las respuestas correctas en memoria para calcular calificación
     let respuestasCorrectas = {};
 
@@ -144,7 +145,7 @@
     // LECTURA DE PREGUNTAS DESDE GOOGLE SHEETS
     async function cargarPreguntas() {
       if (scriptURL === 'AQUI_VA_TU_URL') {
-        mostrarPreguntasPrueba();
+        mostrarPreguntasPrueba("No se pudieron cargar las preguntas correctamente. Sin URL.");
         return;
       }
 
@@ -172,9 +173,9 @@
           }
 
           htmlContent += `
-                    <div class="mb-4">
-                        <p class="fw-bold mb-2">${numPregunta}. ${textoPregunta} *</p>
-                    `;
+            <div class="mb-4">
+              <p class="fw-bold mb-2">${numPregunta}. ${textoPregunta} *</p>
+          `;
 
           // Extraemos las opciones a un arreglo temporal (Columna C en adelante)
           let opcionesTemporales = [];
@@ -196,13 +197,13 @@
             const valorSeguro = textoOpcion.toString().replace(/"/g, '&quot;');
 
             htmlContent += `
-                        <div class="border rounded-3 p-3 mb-2 custom-radio-box">
-                            <div class="form-check m-0">
-                                <input class="form-check-input" type="radio" name="pregunta${numPregunta}" id="${idOpcion}" value="${valorSeguro}" required>
-                                <label class="form-check-label stretched-link w-100" for="${idOpcion}">${textoOpcion}</label>
-                            </div>
-                        </div>
-                        `;
+              <div class="border rounded-3 p-3 mb-2 custom-radio-box">
+                <div class="form-check m-0">
+                  <input class="form-check-input" type="radio" name="pregunta${numPregunta}" id="${idOpcion}" value="${valorSeguro}" required>
+                  <label class="form-check-label stretched-link w-100" for="${idOpcion}">${textoOpcion}</label>
+                </div>
+              </div>
+            `;
           }
           htmlContent += `</div>`;
         }
@@ -211,30 +212,24 @@
         if (htmlContent) {
           container.innerHTML = htmlContent;
         } else {
-          container.innerHTML = '<p class="text-danger">Tu hoja de "Preguntas" parece estar vacía o no tiene el formato correcto.</p>';
+          mostrarPreguntasPrueba("No se pudieron cargar las preguntas correctamente. Hoja vacía");
         }
       } catch (error) {
         console.error('Error conectando con Google Sheets:', error);
-        document.getElementById('preguntasContainer').innerHTML = `
-                    <div class="alert alert-danger shadow-sm">
-                        Ocurrió un error al cargar las preguntas. ¿Pegaste bien la URL y diste permisos a "Cualquier persona"?
-                    </div>`;
-        mostrarPreguntasPrueba();
+        mostrarPreguntasPrueba("No se pudieron cargar las preguntas correctamente. URL inválido o Permisos denegados.");        
       }
     }
 
     // Función de respaldo 
-    function mostrarPreguntasPrueba() {
-      console.warn('Cargando preguntas de prueba.');  
-
+    function mostrarPreguntasPrueba(mensaje) {
       examenTerminado = true;
       document.getElementById('submitBtn').disabled = true;
 
       document.getElementById('preguntasContainer').innerHTML = `
-        <div class="alert alert-info mb-4">
-            <i class="fas fa-info-circle me-2"></i> No se pudieron cargar las preguntas correctamente</strong>.
+        <div class="alert alert-danger mb-4">
+            <i class="fas fa-info-circle me-2"></i>${mensaje}
         </div>                
-      `;      
+      `;
     }
 
     cargarPreguntas();
