@@ -1,0 +1,38 @@
+:root {
+  --fondo: #eff6ff; /* Definimos el nombre de la variable */
+}
+
+/*Protección para no seleccionar texto */
+body {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.navbar {
+  margin-bottom: 20px;
+  background-color: var(--fondo);
+}
+
+.card {
+  border: 1px solid #d1fae5;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  background: white;
+  transition: transform 0.2s;
+}
+
+.custom-radio-box:hover, .fondo {
+  background-color: var(--fondo);
+}
+
+.custom-radio-box {
+  transition: all 0.2s ease-in-out;
+  position: relative;
+}
+
+.modal-overlay {
+  background-color: rgba(0, 0, 0, 0.85);
+  z-index: 1050;
+}
