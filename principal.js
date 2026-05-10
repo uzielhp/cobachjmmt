@@ -15,12 +15,18 @@ class MyNavbar extends HTMLElement {
               </li>
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  Examenes
+                  Actividades 200s
                 </a>
                 <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" href="#">200s</a></li>
-                  <li><a class="dropdown-item" href="400s.html">400s</a></li>
-                  <li><a class="dropdown-item" href="#">600s</a></li>
+                  <li><a class="dropdown-item" href="200s_Act10.html">Actividad 10 Contaminación digital</a></li>
+                </ul>
+              </li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Examenes
+                </a>
+                <ul class="dropdown-menu">                  
+                  <li><a class="dropdown-item" href="400s_ExaP2.html">400s</a></li>                  
                 </ul>
               </li>
             </ul>

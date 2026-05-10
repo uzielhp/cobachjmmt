@@ -12,198 +12,261 @@
 
   <link rel="stylesheet" href="principal.css">
   <script src="principal.js"></script>
+
+  <!-- Importar estilos de Swiper.js -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+  <style>
+    /* Estilos generales del fondo y la tipografía */
+    .galeria {      
+      display: flex;
+      align-items: center;
+      min-height: 90vh;
+    }
+
+    /* Contenedor principal del carrusel */
+    .swiper {
+      width: 100%;      
+      padding-bottom: 50px; /* Espacio para los puntos de paginación */
+    }
+
+    /* Estilo individual de cada tarjeta (slide) */
+    .swiper-slide {
+      width: 700px; /* Ancho base de la imagen principal */
+      height: 500px;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      background-color: rgba(var(--bs-dark-rgb));
+      box-shadow: 0 10px 10px rgba(0,0,0,0.5);
+      /* Transición suave al cambiar de estado */
+      transition: all 0.3s ease;
+    }
+
+    /* Imagen dentro de la tarjeta */
+    .swiper-slide img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Capa oscura para las tarjetas inactivas (las que están al fondo) */
+    .swiper-slide::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6); /* Oscurece al 60% */
+      transition: opacity 0.4s ease;
+      z-index: 1;
+    }
+
+    /* Quitar la capa oscura solo a la tarjeta activa (la del centro) */
+    .swiper-slide-active::after {
+      opacity: 0;
+    }
+
+    /* Contenedor del texto inferior */
+    .slide-info {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 80px 30px 25px; /* Padding alto arriba para un degradado suave */
+      background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 40%, transparent 100%);
+      color: #ffffff;
+      box-sizing: border-box;
+      z-index: 2;
+      opacity: 0; /* Oculto por defecto */
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      transform: translateY(10px);
+    }
+
+    /* Mostrar el texto solo en la tarjeta activa */
+    .swiper-slide-active .slide-info {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Estilos de la tipografía del texto */
+    .slide-info h2 {
+      margin: 0 0 8px 0;
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .slide-info p {
+      margin: 0;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: #d1d5db;
+      /* Truncar texto a 2 líneas como en la imagen */
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Personalización de los controles (flechas) */
+    .swiper-button-next, .swiper-button-prev {
+      color: white;
+      opacity: 0.7;
+      transition: opacity 0.3s ease, transform 0.2s ease;
+      --swiper-navigation-size: 35px; /* Tamaño de la flecha */
+      padding: 20px;
+    }
+
+    .swiper-button-next:hover, .swiper-button-prev:hover {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+
+    /* Posicionar flechas más hacia los bordes */
+    .swiper-button-prev { left: 4%; }
+    .swiper-button-next { right: 4%; }
+
+    /* Personalización de los puntos de paginación (dots) */
+    .swiper-pagination-bullet {      
+      opacity: 1;
+      transform: scale(1.1);
+      width: 8px;
+      height: 8px;
+      margin: 0 6px !important;
+      transition: all 0.3s ease;
+      background-color: white;
+    }
+
+    .swiper-pagination-bullet-active {
+      background-color: black; /* Color blanco activo */
+      width: 8px;      
+      box-shadow: 0px 0px 5px rgba(255,255,255,1);
+    }
+
+    /* Adaptabilidad para pantallas móviles */
+    @media (max-width: 768px) {
+      .swiper-slide {
+          width: 85%; /* En móvil ocupa casi todo el ancho */
+          height: 300px;
+      }
+      .swiper-button-next, .swiper-button-prev {
+          display: none; /* Ocultar flechas en móvil, usar swipe táctil */
+      }
+      .slide-info h2 { font-size: 1.3rem; }
+      .slide-info p { font-size: 0.85rem; }
+    }
+  </style>
 </head>
 
-<body>
+<body style="background-color: black">
   <my-navbar></my-navbar>
 
-  <div class="container">
-    <header class="text-center mb-5">      
-      <h1>El Peso Invisible de tu Internet</h1>
-      <p>
-        ¿Sabías que el internet contamina? Todo lo que hacemos en línea requiere servidores físicos que consumen enormes
-        cantidades de electricidad y agua a nivel mundial.
-      </p>
-    </header>
+  <!-- Contenedor de Swiper -->
+   <div class="galeria">
+    <div class="swiper mySwiper">
+      <div class="swiper-wrapper">
+          
+        <!-- Slide 1 -->
+        <div class="swiper-slide">
+          <img src="imgs/img1.jpg" alt="Imagen">
+          <div class="slide-info">
+            <h2>Tríptico Capacitación Informática</h2>
+            <p>Grupo 401M 2026</p>
+          </div>
+        </div>
 
-    <!-- Sección de Información de Apps -->
-    <div class="row g-4 mb-5 text-center">
-      <div class="col-md-4">
-        <div class="card p-3 h-100 shadow-sm rounded-3">
-          <i class="bi bi-envelope-paper-fill text-primary fs-1"></i>
-          <h3 class="h5 fw-bold">Correos Olvidados</h3>
-          <p class="text-secondary small mb-0">
-            Esos boletines y correos antiguos que nunca borras ocupan espacio en servidores que están encendidos día y
-            noche. ¡Borrarlos es como apagar un foco que nadie usa!
-          </p>
+        <!-- Slide 2 -->
+        <div class="swiper-slide">
+          <img src="imgs/img2.jpg" alt="">
+          <div class="slide-info">
+            <h2>Tríptico Capacitación Informática</h2>
+            <p>Grupo 401M 2026</p>
+          </div>
+        </div>
+
+        <!-- Slide 3 -->
+        <div class="swiper-slide">
+          <img src="imgs/img3.jpg" alt="Póster Escuadrón">
+          <div class="slide-info">
+            <h2>Tríptico Capacitación Informática</h2>
+            <p>Grupo 401V 2026</p>
+          </div>
+        </div>
+
+        <!-- Slide 4 -->
+        <div class="swiper-slide">
+          <img src="imgs/img4.jpg" alt="Póster Espacial">
+          <div class="slide-info">
+            <h2>Tríptico Capacitación Informática</h2>
+            <p>Grupo 401V 2026</p>
+          </div>
+        </div>
+
+        <!-- Slide 5 -->
+        <div class="swiper-slide">
+          <img src="imgs/img5.jpg" alt="Póster Héroe">
+          <div class="slide-info">
+            <h2>Tríptico Capacitación Informática</h2>
+            <p>Grupo 402M 2026</p>
+          </div>
+        </div>
+
+        <!-- Slide 6 -->
+        <div class="swiper-slide">
+          <img src="imgs/img6.jpg" alt="Póster Héroe">
+          <div class="slide-info">
+            <h2>Tríptico Capacitación Informática</h2>
+            <p>Grupo 402M 2026</p>
+          </div>
         </div>
       </div>
-      <div class="col-md-4">
-        <div class="card p-3 h-100 shadow-sm rounded-3">
-          <i class="bi bi-camera-video-fill text-danger fs-1"></i>
-          <h3 class="h5 fw-bold">Streaming y Redes</h3>
-          <p class="text-secondary small mb-0">
-            Ver Netflix, YouTube o deslizar horas en TikTok es lo que más contamina. El video es muy "pesado" y moverlo
-            por la red requiere mucha energía.
-          </p>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card p-3 h-100 shadow-sm rounded-3">
-          <i class="bi bi-cloud-fill text-info fs-1"></i>
-          <h3 class="h5 fw-bold">La Nube Infinita</h3>
-          <p class="text-secondary small mb-0">
-            Google Drive, iCloud... Guardamos fotos borrosas "por si acaso". Ese almacenamiento infinito requiere discos
-            duros reales consumiendo luz real.
-          </p>
-        </div>
-      </div>
+      
+      <!-- Paginación (Puntos) -->
+      <div class="swiper-pagination"></div>
+
+      <!-- Flechas de navegación -->
+      <div class="swiper-button-prev"></div>
+      <div class="swiper-button-next"></div>
     </div>
-
-    <!-- Calculadora Interactiva -->
-    <div class="card p-3 rounded-3 shadow-sm mb-5">
-      <h2 class="h4 fw-bold mb-4 d-flex align-items-center gap-2">
-        <i class="bi bi-calculator"></i> Calcula tu Huella Digital Anual
-      </h2>
-
-      <div class="row g-5">
-        <!-- Controles (Barras) -->
-        <div class="col-md-6 d-flex flex-column justify-content-center gap-4">
-
-          <!-- Barra de Correos -->
-          <div>
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <label class="fw-medium text-secondary">
-                <i class="bi bi-envelope me-1"></i> Correos inútiles
-              </label>
-              <span class="badge rounded-pill px-3 py-2" id="val-emails">500</span>
-            </div>
-            <input type="range" class="form-range" id="input-emails" min="0" max="10000" step="50" value="500">
-          </div>
-
-          <!-- Barra de Streaming -->
-          <div>
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <label class="fw-medium text-secondary">
-                <i class="bi bi-play-circle me-1"></i> Horas de video/día
-              </label>
-              <span class="badge rounded-pill px-3 py-2" id="val-streaming">2
-                horas</span>
-            </div>
-            <input type="range" class="form-range" id="input-streaming" min="0" max="12" step="0.5" value="2">
-          </div>
-
-          <!-- Barra de Nube -->
-          <div>
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <label class="fw-medium text-secondary">
-                <i class="bi bi-cloud me-1"></i> Gigas en la nube
-              </label>
-              <span class="badge rounded-pill px-3 py-2" id="val-cloud">15 GB</span>
-            </div>
-            <input type="range" class="form-range" id="input-cloud" min="0" max="500" step="5" value="15">
-          </div>
-
-        </div>
-
-        <!-- Resultados -->
-        <div class="col-md-6">
-          <div class="card p-3 fondo text-center h-100 d-flex flex-column justify-content-center">
-            <h3 class="h6 mb-3">Tu huella de carbono digital genera:</h3>
-            <div class="display-3 fw-bold mb-0" id="total-co2">0.0</div>
-            <div class="h5 fw-bold mb-4">kg de CO2/año</div>
-
-            <hr class="w-100 border-success opacity-25">
-
-            <p class="small text-secondary mb-3">Para compensar esto o igualarlo, equivale a:</p>
-
-            <div class="row g-3">
-              <div class="col-6">
-                <div class="card p-3 h-100">
-                  <i class="bi bi-tree-fill text-success fs-3 d-block mb-1"></i>
-                  <span class="fs-4 fw-bold text-dark d-block" id="trees-needed">0</span>
-                  <span class="small text-secondary" style="font-size: 0.75rem;">Árboles necesarios al año</span>
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="card p-3 h-100">
-                  <i class="bi bi-car-front-fill text-secondary fs-3 d-block mb-1"></i>
-                  <span class="fs-4 fw-bold text-dark d-block" id="car-km">0</span>
-                  <span class="small text-secondary" style="font-size: 0.75rem;">Km en coche de gasolina</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>      
-    
-    <div class="d-flex gap-3 align-items-start">
-      <i class="bi bi-info-circle-fill text-primary fs-2"></i>
-      <p class="small">
-        <strong>¿Qué podemos hacer?</strong> ¡Cosas muy sencillas! Vacía tu papelera de correo de vez en cuando, cancela
-        las suscripciones a boletines que no lees, no dejes videos reproduciéndose de fondo si no los estás viendo, y
-        haz limpieza de las fotos borrosas de tu celular. ¡Pequeños hábitos hacen una gran diferencia mundial!
-      </p>
-    </div>
-
   </div>
 
-  <!-- Script de la lógica -->
+  <!-- Importar script de Swiper.js -->
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+  <!-- Inicializar el Slider -->
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // Elementos de entrada (sliders)
-      const inputEmails = document.getElementById('input-emails');
-      const inputStreaming = document.getElementById('input-streaming');
-      const inputCloud = document.getElementById('input-cloud');
+    const swiper = new Swiper('.mySwiper', {
+      effect: 'coverflow',        // Efecto visual 3D
+      grabCursor: true,           // Cambia el cursor al pasar por encima
+      centeredSlides: true,       // La imagen activa siempre al centro
+      slidesPerView: 'auto',      // Se adapta al ancho definido en CSS
+      initialSlide: 1,            // Inicia en la segunda imagen (índice 1)
+      loop: true,                 // Carrusel infinito
+      
+      // Configuración matemática del efecto 3D para que se vea plano hacia atrás
+      coverflowEffect: {
+        rotate: 0,              // Sin rotación, se mantienen planas
+        stretch: 50,            // Espacio de solapamiento entre imágenes
+        depth: 150,             // Profundidad (qué tan atrás se van las inactivas)
+        modifier: 1,            // Multiplicador del efecto
+        slideShadows: false,    // Desactivamos sombras de swiper, usamos nuestra capa oscura CSS
+      },
 
-      // Elementos donde mostramos los valores de los sliders
-      const valEmails = document.getElementById('val-emails');
-      const valStreaming = document.getElementById('val-streaming');
-      const valCloud = document.getElementById('val-cloud');
+      // Paginación de puntos abajo
+      pagination: {
+        el: '.swiper-pagination',
+        clickable: true,
+      },
 
-      // Elementos de los resultados
-      const elTotalCO2 = document.getElementById('total-co2');
-      const elTrees = document.getElementById('trees-needed');
-      const elCarKm = document.getElementById('car-km');
-
-      // Función que hace las matemáticas
-      function calcularHuella() {
-        // Obtener números de los sliders
-        const emails = parseFloat(inputEmails.value);
-        const streaming = parseFloat(inputStreaming.value);
-        const cloud = parseFloat(inputCloud.value);
-
-        // Actualizar el texto encima de las barras
-        valEmails.textContent = emails;
-        valStreaming.textContent = streaming + ' horas';
-        valCloud.textContent = cloud + ' GB';
-
-        // Cálculos (aproximados)
-        const co2Emails = emails * 0.01;
-        const co2Streaming = streaming * 365 * 0.055;
-        const co2Cloud = cloud * 2;
-
-        const totalCO2 = co2Emails + co2Streaming + co2Cloud;
-
-        // Mostrar resultados
-        elTotalCO2.textContent = totalCO2.toFixed(1);
-
-        // Equivalencias
-        // Un árbol absorbe ~21 kg de CO2/año
-        elTrees.textContent = Math.ceil(totalCO2 / 21);
-
-        // Un coche emite ~0.12 kg de CO2/km
-        elCarKm.textContent = Math.round(totalCO2 / 0.12);
-      }
-
-      // Escuchar cada vez que el usuario mueve una barra
-      inputEmails.addEventListener('input', calcularHuella);
-      inputStreaming.addEventListener('input', calcularHuella);
-      inputCloud.addEventListener('input', calcularHuella);
-
-      // Calcular la primera vez que se carga la página
-      calcularHuella();
+      // Flechas laterales
+      navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+      },
     });
   </script>
 </body>
