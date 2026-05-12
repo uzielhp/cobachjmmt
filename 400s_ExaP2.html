@@ -176,7 +176,8 @@
         } else {
           mensajeError("No se pudieron cargar las preguntas correctamente. Hoja vacía");
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.error('Error conectando con Google Sheets:', error);
         mensajeError("No se pudieron cargar las preguntas correctamente. Problema de red.");        
       }
