@@ -113,7 +113,8 @@
     }
 
     async function cargarPreguntas() {
-      const URL400s = await obtenerUrlDinamica(400);
+      //const URL400s = await obtenerUrlDinamica(400);
+      const URL400s = "https://script.google.com/macros/s/AKfycbyirAqR_MJT3EbMj8XQ6FovYr28i9iyCISpNetxpo3AVEq_rogbAOr_lJzeHXZF6VDIuQ/exec";
 
       if (!URL400s) {
         mensajeError("No se pudieron cargar las preguntas correctamente. Error de conexión con el servidor.");
