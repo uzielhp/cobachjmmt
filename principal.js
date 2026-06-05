@@ -39,7 +39,7 @@ class MyNavbar extends HTMLElement {
 customElements.define('my-navbar', MyNavbar);
 
 // Función para obtener la URL dinámica desde el Sheet
-const CONEXION = 'https://script.google.com/macros/s/AKfycbwhekogIPHfArkHFhHMtrTsKJBHwpYxaPcF7lsR6bPrrEslgngDiEn_83N1jpPIzTzU/exec';
+const CONEXION = 'https://script.google.com/macros/s/AKfycbyOkgeNf-RMRvTkx6OCVMfiB_2ZB88X8dnCivaD-RHVLHj01xrbpXs03XbXfe7pBf75/exec';
 async function obtenerUrlDinamica(grupo) {
   try {
     const response = await fetch(CONEXION, {
