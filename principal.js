@@ -30,6 +30,9 @@ class MyNavbar extends HTMLElement {
                 </ul>
               </li>
             </ul>
+            <span class="navbar-text">
+              <img src="adm.png" alt="ADM" class="logo-overflow">
+            </span>
           </div>
         </div>
       </nav>
