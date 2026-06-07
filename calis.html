@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Examen Seguro Anti-IA</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background-color: #f4f4f9; }
@@ -35,47 +37,63 @@
 </div>
 
 <script>
-    const elem = document.documentElement; // Selecciona toda la página
+    let examenIniciado = false;
 
     function iniciarExamen() {
-        // 1. Forzar Pantalla Completa (Soporta diferentes navegadores/celulares)
+        examenIniciado = true;
+        const elem = document.documentElement;
+
+        // Intentar pantalla completa (Funcionará en Android/PC)
         if (elem.requestFullscreen) {
             elem.requestFullscreen();
-        } else if (elem.webkitRequestFullscreen) { /* Safari / iOS */
+        } else if (elem.webkitRequestFullscreen) {
             elem.webkitRequestFullscreen();
-        } else if (elem.msRequestFullscreen) { /* IE11 */
-            elem.msRequestFullscreen();
         }
 
-        // Mostrar el examen y ocultar el inicio
         document.getElementById('pantalla-inicio').classList.add('oculto');
         document.getElementById('pantalla-examen').classList.remove('oculto');
     }
 
-    // 2. Escuchar cuando cambia el estado de la pantalla completa
+    // --- DETECTOR PARA ANDROID / PC (Cambio de pantalla completa) ---
     document.addEventListener('fullscreenchange', verificarSalida);
-    document.addEventListener('webkitfullscreenchange', verificarSalida); // Para Safari/iOS
-    document.addEventListener('msfullscreenchange', verificarSalida);
+    document.addEventListener('webkitfullscreenchange', verificarSalida);
 
     function verificarSalida() {
-        // Si el documento YA NO está en pantalla completa
-        if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
-            
-            // 3. Bloquear el examen inmediatamente
-            document.getElementById('pantalla-examen').classList.add('oculto');
-            document.getElementById('pantalla-bloqueo').classList.remove('oculto');
-            
-            // AQUÍ puedes agregar código para enviar un correo al profesor o guardar el cero en tu base de datos
-            console.log("¡Trampa detectada! El alumno abandonó la pantalla.");
+        if (examenIniciado && !document.fullscreenElement && !document.webkitFullscreenElement) {
+            anularExamen();
         }
     }
 
+    // --- DETECTOR UNIVERSAL Y EXCLUSIVO PARA IOS (Pérdida de Foco / Visibilidad) ---
+    // Si el alumno baja la barra de notificaciones o activa la IA, la página se "oculta"
+    document.addEventListener('visibilitychange', function() {
+        if (examenIniciado && document.visibilityState === 'hidden') {
+            anularExamen();
+        }
+    });
+
+    // Si el alumno cambia de app o abre el menú del sistema
+    window.addEventListener('blur', function() {
+        if (examenIniciado) {
+            // Le damos un pequeño retraso para evitar falsos positivos por parpadeos
+            setTimeout(() => {
+                anularExamen();
+            }, 500);
+        }
+    });
+
+    function anularExamen() {
+        document.getElementById('pantalla-examen').classList.add('oculto');
+        document.getElementById('pantalla-bloqueo').classList.remove('oculto');
+        examenIniciado = false;
+        console.log("¡Trampa detectada en el dispositivo!");
+    }
+
     function terminarExamen() {
+        examenIniciado = false;
         alert("Examen enviado con éxito.");
-        // Salir de pantalla completa al terminar de forma legal
         if (document.exitFullscreen) document.exitFullscreen();
     }
 </script>
-
 </body>
 </html>
