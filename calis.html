@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examen Seguro Anti-IA</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background-color: #f4f4f9; }
+        .contenedor { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0px 4px 10px rgba(0,0,0,0.1); }
+        button { background-color: #007BFF; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 5px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .oculto { display: none; }
+        .alerta-trampa { color: red; font-weight: bold; font-size: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="contenedor" id="pantalla-inicio">
+    <h2>Evaluación en Línea</h2>
+    <p>Este examen requiere modo de pantalla completa obligatorio para evitar el uso de asistentes de IA.</p>
+    <button onclick="iniciarExamen()">Comenzar Examen</button>
+</div>
+
+<div class="contenedor oculto" id="pantalla-examen">
+    <h2>Examen en Progreso...</h2>
+    <p>Pregunta 1: ¿Cuál es el resultado de 2 + 2?</p>
+    <input type="radio" name="p1" value="a"> A) 3<br>
+    <input type="radio" name="p1" value="b"> B) 4<br><br>
+    <button onclick="terminarExamen()">Enviar Respuestas</button>
+</div>
+
+<div class="contenedor oculto" id="pantalla-bloqueo">
+    <h2 class="alerta-trampa">EXAMEN ANULADO</h2>
+    <p>Has salido del modo de pantalla completa. Esta acción ha sido registrada como intento de copia/uso de IA.</p>
+</div>
+
+<script>
+    const elem = document.documentElement; // Selecciona toda la página
+
+    function iniciarExamen() {
+        // 1. Forzar Pantalla Completa (Soporta diferentes navegadores/celulares)
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) { /* Safari / iOS */
+            elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) { /* IE11 */
+            elem.msRequestFullscreen();
+        }
+
+        // Mostrar el examen y ocultar el inicio
+        document.getElementById('pantalla-inicio').classList.add('oculto');
+        document.getElementById('pantalla-examen').classList.remove('oculto');
+    }
+
+    // 2. Escuchar cuando cambia el estado de la pantalla completa
+    document.addEventListener('fullscreenchange', verificarSalida);
+    document.addEventListener('webkitfullscreenchange', verificarSalida); // Para Safari/iOS
+    document.addEventListener('msfullscreenchange', verificarSalida);
+
+    function verificarSalida() {
+        // Si el documento YA NO está en pantalla completa
+        if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+            
+            // 3. Bloquear el examen inmediatamente
+            document.getElementById('pantalla-examen').classList.add('oculto');
+            document.getElementById('pantalla-bloqueo').classList.remove('oculto');
+            
+            // AQUÍ puedes agregar código para enviar un correo al profesor o guardar el cero en tu base de datos
+            console.log("¡Trampa detectada! El alumno abandonó la pantalla.");
+        }
+    }
+
+    function terminarExamen() {
+        alert("Examen enviado con éxito.");
+        // Salir de pantalla completa al terminar de forma legal
+        if (document.exitFullscreen) document.exitFullscreen();
+    }
+</script>
+
+</body>
+</html>
