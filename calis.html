@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Examen Seguro Anti-IA</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background-color: #f4f4f9; }
+        .contenedor { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0px 4px 10px rgba(0,0,0,0.1); }
+        button { background-color: #007BFF; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 5px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .oculto { display: none; }
+        .alerta-trampa { color: red; font-weight: bold; font-size: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="contenedor" id="pantalla-inicio">
+    <h2>Evaluación en Línea</h2>
+    <p>Este examen requiere modo de pantalla completa obligatorio para evitar el uso de asistentes de IA.</p>
+    <button onclick="iniciarExamen()">Comenzar Examen</button>
+</div>
+
+<div class="contenedor oculto" id="pantalla-examen">
+    <h2>Examen en Progreso...</h2>
+    <p>Pregunta 1: ¿Cuál es el resultado de 2 + 2?</p>
+    <input type="radio" name="p1" value="a"> A) 3<br>
+    <input type="radio" name="p1" value="b"> B) 4<br><br>
+    <button onclick="terminarExamen()">Enviar Respuestas</button>
+</div>
+
+<div class="contenedor oculto" id="pantalla-bloqueo">
+    <h2 class="alerta-trampa">EXAMEN ANULADO</h2>
+    <p>Has salido del modo de pantalla completa. Esta acción ha sido registrada como intento de copia/uso de IA.</p>
+</div>
+
+<script>
+    let examenIniciado = false;
+
+    function iniciarExamen() {
+        examenIniciado = true;
+        const elem = document.documentElement;
+
+        // Intentar pantalla completa (Funcionará en Android/PC)
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) {
+            elem.webkitRequestFullscreen();
+        }
+
+        document.getElementById('pantalla-inicio').classList.add('oculto');
+        document.getElementById('pantalla-examen').classList.remove('oculto');
+    }
+
+    // --- DETECTOR PARA ANDROID / PC (Cambio de pantalla completa) ---
+    document.addEventListener('fullscreenchange', verificarSalida);
+    document.addEventListener('webkitfullscreenchange', verificarSalida);
+
+    function verificarSalida() {
+        if (examenIniciado && !document.fullscreenElement && !document.webkitFullscreenElement) {
+            anularExamen();
+        }
+    }
+
+    // --- DETECTOR UNIVERSAL Y EXCLUSIVO PARA IOS (Pérdida de Foco / Visibilidad) ---
+    // Si el alumno baja la barra de notificaciones o activa la IA, la página se "oculta"
+    document.addEventListener('visibilitychange', function() {
+        if (examenIniciado && document.visibilityState === 'hidden') {
+            anularExamen();
+        }
+    });
+
+    // Si el alumno cambia de app o abre el menú del sistema
+    window.addEventListener('blur', function() {
+        if (examenIniciado) {
+            // Le damos un pequeño retraso para evitar falsos positivos por parpadeos
+            setTimeout(() => {
+                anularExamen();
+            }, 500);
+        }
+    });
+
+    function anularExamen() {
+        document.getElementById('pantalla-examen').classList.add('oculto');
+        document.getElementById('pantalla-bloqueo').classList.remove('oculto');
+        examenIniciado = false;
+        console.log("¡Trampa detectada en el dispositivo!");
+    }
+
+    function terminarExamen() {
+        examenIniciado = false;
+        alert("Examen enviado con éxito.");
+        if (document.exitFullscreen) document.exitFullscreen();
+    }
+</script>
+</body>
+</html>
