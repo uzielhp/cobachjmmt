@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COBACH JMMT</title>
+
+  <link rel="stylesheet" href="principal.css">
+  <script src="principal.js"></script>  
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+</head>
+
+<body>
+  <div id="app-cargando"></div>
+  
+  <div id="app-content" style="display: none;">
+    <header></header>
+    <main>
+      <div class="container">
+        <div class="card shadow-sm rounded-4 overflow-hidden">      
+          
+          <div class="text-center p-2">
+            <h1 class="border-bottom pb-2">
+              Examen
+            </h1>        
+            <p>Por favor, completa tus datos y responde las preguntas.</p>
+          </div>      
+
+          <form id="studentForm" class="card-body pb-2 md-4">
+            <!-- Datos del Alumno -->
+            <input type="hidden" id="vecesSalioInput" name="vecesSalio" value="0">
+            <h5 class="border-bottom pb-2 mb-3" style="color: #FE6100;">
+              <i class="bi bi-mortarboard-fill"></i> Datos del Alumno
+            </h5>
+            <div class="row g-3">
+              <div class="col-12">
+                <label for="grupo" class="form-label fw-bold">Grupo / Turno *</label>
+                <select id="grupo" name="grupo" required class="form-select">
+                  <option value="" disabled selected>Selecciona tu grupo...</option>
+                  <option value="401M">401M</option>
+                  <option value="402M">402M</option>
+                  <option value="401V">401V</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="nombres" class="form-label fw-bold">Nombre(s) *</label>
+                <input type="text" id="nombres" name="nombres" required placeholder="Ej. María Fernanda"
+                  class="form-control">                
+              </div>
+              <div class="col-md-6">
+                <label for="apellidos" class="form-label fw-bold">Apellidos *</label>
+                <input type="text" id="apellidos" name="apellidos" required placeholder="Ej. Pérez Gómez"
+                  class="form-control">
+              </div>
+            </div>
+            
+            <!-- Datos de Preguntas -->
+            <h5 class="border-bottom pb-2 mb-4 mt-4" style="color: #FE6100;">
+              <i class="bi bi-patch-question-fill"></i> Preguntas
+            </h5>
+
+            <div id="preguntasContainer"></div>            
+
+            <button disabled type="submit" id="submitBtn" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm py-3 mt-3">
+              Enviar mis respuestas <i class="fas fa-paper-plane ms-2"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div id="screenshotWarning"
+        class="position-fixed top-0 start-0 w-100 h-100 modal-overlay d-none flex-column justify-content-center align-items-center p-4 text-center">
+        <i class="fas fa-exclamation-triangle text-warning display-1 mb-4"></i>
+        <h2 class="text-white fw-bold mb-3">Acción no permitida</h2>
+        <p class="text-light fs-5 max-w-50">No está permitido hacer capturas de pantalla, copiar o imprimir este
+          formulario.</p>
+        <button onclick="document.getElementById('screenshotWarning').classList.replace('d-flex', 'd-none')"
+          class="btn btn-primary btn-lg mt-4 px-5">Entendido</button>
+      </div>
+
+      <div id="leaveWarning"
+        class="position-fixed top-0 start-0 w-100 h-100 modal-overlay d-none flex-column justify-content-center align-items-center p-4 text-center">
+        <i class="fas fa-eye-slash text-warning display-1 mb-4"></i>
+        <h2 class="text-white fw-bold mb-3">¡Te saliste de la página!</h2>
+        <p class="text-light fs-5 max-w-50">Detectamos que saliste del formulario. Por favor, mantente en esta pantalla.
+        </p>
+        <button onclick="dismissLeaveWarning()" class="btn btn-primary btn-lg mt-4 px-5">Entendido, regresaré al
+          cuestionario</button>
+      </div>
+    </main>
+  </div>
+
+  <footer><footer>
+
+  <script>    
+    window.addEventListener('load', (event) => {
+        msgCargando(true);        
+        actualizarVecesSalio();
+        cargarPreguntas();
+    });     
+    
+    // --- LÓGICA DEL EXAMEN  ---
+    let respuestasCorrectas = {};    
+    let examenTerminado = false;    
+    let URL400s = "";
+    function revolverArreglo(arreglo) {
+      for (let i = arreglo.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arreglo[i], arreglo[j]] = [arreglo[j], arreglo[i]];
+      }
+      return arreglo;
+    }
+
+    async function cargarPreguntas() {                
+      URL400s = await obtenerUrlSem('400');      
+      if (!URL400s) {
+        msgError("Error al conectarse con la Hoja. Sin URL");
+        examenTerminado = true;
+      }
+      else {
+        try {                    
+          const response = await fetch(URL400s);
+          if (!response.ok) throw new Error('No se pudo conectar con Sheets');
+
+          const data = await response.json();
+          let htmlContent = '';
+          let numPregunta = 0;
+
+          const inicio = (data.length > 0 && data[0][0].toString().toLowerCase().includes('pregunta')) ? 1 : 0;
+
+          for (let i = inicio; i < data.length; i++) {
+            const fila = data[i];
+            if (!fila[0]) continue;
+
+            numPregunta++;
+            const textoPregunta = fila[0];
+
+            if (fila[1]) {
+              respuestasCorrectas['pregunta' + numPregunta] = fila[1].toString().trim().toLowerCase();
+            }
+
+            htmlContent += `<div class="mb-4"><p class="fw-bold mb-2">${numPregunta}. ${textoPregunta} *</p>`;
+
+            let opcionesTemporales = [];
+            for (let j = 2; j < fila.length; j++) {
+              if (fila[j]) opcionesTemporales.push(fila[j]);
+            }
+
+            opcionesTemporales = revolverArreglo(opcionesTemporales);
+
+            let numOpcion = 0;
+            for (let k = 0; k < opcionesTemporales.length; k++) {
+              const textoOpcion = opcionesTemporales[k];
+              numOpcion++;
+              const idOpcion = `p${numPregunta}_o${numOpcion}`;
+              const valorSeguro = textoOpcion.toString().replace(/"/g, '&quot;');
+
+              htmlContent += `
+                <div class="border rounded-3 p-3 mb-2 custom-radio-box">
+                  <div class="form-check m-0">
+                    <input class="form-check-input" type="radio" name="pregunta${numPregunta}" id="${idOpcion}" value="${valorSeguro}" required>
+                    <label class="form-check-label stretched-link w-100" for="${idOpcion}">${textoOpcion}</label>
+                  </div>
+                </div>
+              `;
+            }
+            htmlContent += `</div>`;
+          }
+
+          const container = document.getElementById('preguntasContainer');
+          if (htmlContent) {
+            container.innerHTML = htmlContent;
+            document.getElementById('submitBtn').disabled = false;
+          } 
+          else {
+            msgError("No se pudieron cargar las preguntas correctamente. Hoja vacía");
+            examenTerminado = true;
+          }          
+        }
+        catch (e) {          
+          msgError("Error al conectarse con la Hoja. Incorrecta",e);   
+          examenTerminado = true;     
+        }        
+      }  
+      msgCargando(false);    
+    }
+
+    // SISTEMA DE ADVERTENCIAS Y CONTADOR
+    let vecesSalio = sessionStorage.getItem('vecesSalio') || null;
+    function dismissLeaveWarning() {      
+      document.getElementById('leaveWarning').classList.replace('d-flex', 'd-none');
+      
+      vecesSalio = ((parseInt(vecesSalio || "0")) + 1).toString();
+      sessionStorage.setItem('vecesSalio', vecesSalio);
+
+      document.getElementById('vecesSalioInput').value = vecesSalio;
+
+      actualizarVecesSalio();
+    }
+    function actualizarVecesSalio() {
+      const textoVez = vecesSalio === 1 ? 'vez' : 'veces';
+      if(vecesSalio > 0) {
+        document.getElementById('submitBtn').innerHTML = `Enviar (Te saliste ${vecesSalio} ${textoVez}) <i class="fas fa-paper-plane ms-2"></i>`;
+      }
+    }
+
+    document.addEventListener('contextmenu', e => { if (!examenTerminado) e.preventDefault(); });
+
+    document.addEventListener('keydown', e => {
+      if (examenTerminado) return;
+      if (e.ctrlKey && ['c', 'C', 'p', 'P', 's', 'S'].includes(e.key)) {
+        e.preventDefault();
+        mostrarAdvertencia('screenshotWarning');
+      }
+    });
+
+    document.addEventListener('keyup', e => {
+      if (examenTerminado) return;
+      if (e.key === 'PrintScreen') {
+        navigator.clipboard.writeText('');
+        mostrarAdvertencia('screenshotWarning');
+      }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (examenTerminado) return;
+      if (document.hidden) mostrarAdvertencia('leaveWarning');
+    });
+
+    window.addEventListener('blur', () => {
+      if (examenTerminado) return;      
+  
+      mostrarAdvertencia('leaveWarning');
+    });
+
+    function mostrarAdvertencia(id) {
+      const modal = document.getElementById(id);
+      if (modal) {
+        modal.classList.remove('d-none');
+        modal.classList.add('d-flex');
+      }
+    }
+
+    // ENVÍO DE DATOS
+    const form = document.getElementById('studentForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();      
+
+      msgCargando(true);
+
+      if (!URL400s) {
+        msgError('No hay conexión con el servidor de envío.');
+        examenTerminado = true;
+        return;
+      }
+
+      const originalBtnHtml = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin me-2"></i> Guardando y calificando...';
+      submitBtn.classList.replace('btn-primary', 'btn-secondary');      
+
+      const formData = new FormData(form);
+      let aciertos = 0;
+
+      for (const [preguntaKey, respuestaCorrecta] of Object.entries(respuestasCorrectas)) {
+        const respuestaAlumno = formData.get(preguntaKey);
+        if (respuestaAlumno && respuestaAlumno.toString().trim().toLowerCase() === respuestaCorrecta) {
+          aciertos++;
+          formData.append('eval_' + preguntaKey, 'correcta');
+        } else {
+          formData.append('eval_' + preguntaKey, 'incorrecta');
+        }
+      }
+
+      formData.append('totalCorrectas', aciertos);
+
+      fetch(URL400s, { method: 'POST', body: formData, mode: 'no-cors' }).then(() => {
+        examenTerminado = true;
+        msgError(`¡Tus respuestas se han guardado! Obtuviste ${aciertos} acierto(s).`);
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Examen finalizado <i class="fas fa-check-circle ms-2"></i>';
+        submitBtn.classList.replace('btn-secondary', 'btn-success');
+        const inputs = form.querySelectorAll('input, select');
+        inputs.forEach(input => input.disabled = true);
+
+        msgCargando(false);
+      }).catch(() => {
+        msgError('Hubo un problema al enviar. Por favor, intenta de nuevo.', true);
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnHtml;
+        submitBtn.classList.replace('btn-secondary', 'btn-primary');
+      });      
+    });
+  </script>
+</body>
+
+</html>
