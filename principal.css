@@ -7,6 +7,11 @@
     50% { opacity: .5; }
 }
 
+#app-content {
+  display: none;
+  margin-top: 70px;
+}
+
 .glow {
     animation: glow 2s infinite;
 }

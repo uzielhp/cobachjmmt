@@ -17,7 +17,7 @@
 <body>
   <div id="app-cargando"></div>
   
-  <div id="app-content" style="display: none;">
+  <div id="app-content">
     <header></header>
     <main>
       <div class="container">
@@ -30,7 +30,7 @@
             <p>Por favor, completa tus datos y responde las preguntas.</p>
           </div>      
 
-          <form id="studentForm" class="card-body pb-2 md-4">
+          <form id="studentForm" class="card-body pb-2 md-4" novalidate>
             <!-- Datos del Alumno -->
             <input type="hidden" id="vecesSalioInput" name="vecesSalio" value="0">
             <h5 class="border-bottom pb-2 mb-3" style="color: #FE6100;">
@@ -65,7 +65,7 @@
 
             <div id="preguntasContainer"></div>            
 
-            <button disabled type="submit" id="submitBtn" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm py-3 mt-3">
+            <button type="submit" id="submitBtn" class="btn btn-primary w-100 fw-bold shadow-sm py-3 mt-3 d-none">
               Enviar mis respuestas <i class="fas fa-paper-plane ms-2"></i>
             </button>
           </form>
@@ -163,7 +163,7 @@
                 <div class="border rounded-3 p-3 mb-2 custom-radio-box">
                   <div class="form-check m-0">
                     <input class="form-check-input" type="radio" name="pregunta${numPregunta}" id="${idOpcion}" value="${valorSeguro}" required>
-                    <label class="form-check-label stretched-link w-100" for="${idOpcion}">${textoOpcion}</label>
+                    <label class="form-check-label w-100" style="cursor: pointer;" for="${idOpcion}">${textoOpcion}</label>
                   </div>
                 </div>
               `;
@@ -173,8 +173,8 @@
 
           const container = document.getElementById('preguntasContainer');
           if (htmlContent) {
-            container.innerHTML = htmlContent;
-            document.getElementById('submitBtn').disabled = false;
+            container.innerHTML = htmlContent;            
+            document.getElementById('submitBtn').classList.remove('d-none');
           } 
           else {
             msgError("No se pudieron cargar las preguntas correctamente. Hoja vacía");
@@ -202,7 +202,7 @@
       actualizarVecesSalio();
     }
     function actualizarVecesSalio() {
-      const textoVez = vecesSalio === 1 ? 'vez' : 'veces';
+      const textoVez = vecesSalio == 1 ? 'vez' : 'veces';
       if(vecesSalio > 0) {
         document.getElementById('submitBtn').innerHTML = `Enviar (Te saliste ${vecesSalio} ${textoVez}) <i class="fas fa-paper-plane ms-2"></i>`;
       }
@@ -233,7 +233,6 @@
 
     window.addEventListener('blur', () => {
       if (examenTerminado) return;      
-  
       mostrarAdvertencia('leaveWarning');
     });
 
@@ -249,25 +248,38 @@
     const form = document.getElementById('studentForm');
     const submitBtn = document.getElementById('submitBtn');
 
-    form.addEventListener('submit', e => {
+    form.addEventListener('submit', async e => {
       e.preventDefault();      
 
-      msgCargando(true);
+      if (!form.checkValidity()) {
+        e.stopPropagation();
+        form.classList.add('was-validated'); // Enciende los bordes rojos en los campos vacíos
+        
+        // Extra: Hace scroll automático hacia el primer campo que el alumno dejó vacío
+        const primerError = form.querySelector(':invalid');
+        if (primerError) {
+          primerError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return; // Detiene el envío y no penaliza al alumno
+      }
+
+      msgCargando(true); // Enciende el loader
 
       if (!URL400s) {
         msgError('No hay conexión con el servidor de envío.');
         examenTerminado = true;
+        msgCargando(false);
         return;
       }
 
-      const originalBtnHtml = submitBtn.innerHTML;
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin me-2"></i> Guardando y calificando...';
-      submitBtn.classList.replace('btn-primary', 'btn-secondary');      
+      // Ocultamos el botón para evitar dobles envíos accidentales
+      submitBtn.classList.add('d-none');
+      msgError("Guardando y calificando...");      
 
       const formData = new FormData(form);
       let aciertos = 0;
 
+      // Calificación automática de respuestas
       for (const [preguntaKey, respuestaCorrecta] of Object.entries(respuestasCorrectas)) {
         const respuestaAlumno = formData.get(preguntaKey);
         if (respuestaAlumno && respuestaAlumno.toString().trim().toLowerCase() === respuestaCorrecta) {
@@ -280,22 +292,26 @@
 
       formData.append('totalCorrectas', aciertos);
 
-      fetch(URL400s, { method: 'POST', body: formData, mode: 'no-cors' }).then(() => {
+      try {
+        // Con el await, JavaScript espera de verdad a que Google Sheets responda
+        await fetch(URL400s, { method: 'POST', body: formData, mode: 'no-cors' });
+        
         examenTerminado = true;
-        msgError(`¡Tus respuestas se han guardado! Obtuviste ${aciertos} acierto(s).`);
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = 'Examen finalizado <i class="fas fa-check-circle ms-2"></i>';
-        submitBtn.classList.replace('btn-secondary', 'btn-success');
-        const inputs = form.querySelectorAll('input, select');
+        msgError("¡Tus respuestas se han guardado! Examen finalizado");
+        sessionStorage.removeItem('vecesSalio');
+        
+        // Deshabilitamos controles para que no los vuelvan a cambiar
+        const inputs = form.querySelectorAll('input, select, button');
         inputs.forEach(input => input.disabled = true);
 
-        msgCargando(false);
-      }).catch(() => {
-        msgError('Hubo un problema al enviar. Por favor, intenta de nuevo.', true);
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalBtnHtml;
-        submitBtn.classList.replace('btn-secondary', 'btn-primary');
-      });      
+      } catch (error) {
+        console.error(error);
+        msgError('Hubo un problema al enviar. Por favor, intenta de nuevo.');
+        submitBtn.classList.remove('d-none'); // Regresamos el botón si falló
+      } finally {
+        // Este bloque se ejecuta SIEMPRE al final (tanto si funcionó como si falló)
+        msgCargando(false); // Apaga el loader de forma segura
+      }
     });
   </script>
 </body>

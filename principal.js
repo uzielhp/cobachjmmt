@@ -35,13 +35,9 @@ async function mostrarMenu(){
       <span class="placeholder bg-secondary py-3 col-12"></span>
       </div>
     </div>    
-  </div>
-  
-  <div class="w-100 text-center placeholder-glow position-fixed bottom-0">      
-    <div class="placeholder bg-primary py-3 col-12">&nbsp;</div>      
   </div>`;
   document.querySelector('header').innerHTML = `
-  <nav class="navbar navbar-expand-lg border-bottom bg-body-tertiary">
+  <nav class="navbar navbar-expand-lg border-bottom bg-body-tertiary fixed-top">
     <div class="container-fluid">
       <img src="imgs/logo.png" alt="Logo" class="logo-overflow">
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
@@ -80,14 +76,14 @@ async function mostrarMenu(){
   </nav>`;  
   document.querySelector('footer').innerHTML =`
   <div id="msgCargando"
-  class="glow bg-primary text-center py-3 position-fixed bottom-0 w-100 fw-bold"
-  style="z-index: 1091; display: none;">
+  class="text-center py-3 position-fixed bottom-0 fw-bold"
+  style="z-index: 1092; display: none; background-color: #FE6100; padding-left: 10px; padding-right: 10px;">
     <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
     <span role="status">Cargando...</span>
   </div>  
   <div id="msgError"
-  class="glow bg-primary text-center py-3 position-fixed bottom-0 w-100 fw-bold"
-  style="z-index: 1091; display: none;">
+  class="text-center py-3 position-fixed bottom-0 w-100 fw-bold"
+  style="z-index: 1091; display: none; background-color: #FE6100;">
     Hola
   </div>`;
   msgCargando(true);
