@@ -82,14 +82,22 @@
           class="btn btn-primary btn-lg mt-4 px-5">Entendido</button>
       </div>
 
-      <div id="leaveWarning"
-        class="position-fixed top-0 start-0 w-100 h-100 modal-overlay d-none flex-column justify-content-center align-items-center p-4 text-center">
-        <i class="fas fa-eye-slash text-warning display-1 mb-4"></i>
-        <h2 class="text-white fw-bold mb-3">¡Te saliste de la página!</h2>
-        <p class="text-light fs-5 max-w-50">Detectamos que saliste del formulario. Por favor, mantente en esta pantalla.
-        </p>
-        <button onclick="dismissLeaveWarning()" class="btn btn-primary btn-lg mt-4 px-5">Entendido, regresaré al
-          cuestionario</button>
+      <!-- Modal -->
+      <div id="modalSaliste" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalSalisteLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="modalSalisteLabel">Te saliste de la página</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              Detectamos que saliste del formulario. Por favor, mantente en esta pantalla.
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   </div>
@@ -104,9 +112,11 @@
     });     
     
     // --- LÓGICA DEL EXAMEN  ---
+    const modalsaliste = new bootstrap.Modal(document.getElementById('modalSaliste'));
     let respuestasCorrectas = {};    
     let examenTerminado = false;    
     let URL400s = "";
+
     function revolverArreglo(arreglo) {
       for (let i = arreglo.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -191,58 +201,40 @@
 
     // SISTEMA DE ADVERTENCIAS Y CONTADOR
     let vecesSalio = sessionStorage.getItem('vecesSalio') || null;
-    function dismissLeaveWarning() {      
-      document.getElementById('leaveWarning').classList.replace('d-flex', 'd-none');
-      
+
+    function actualizarVecesSalio() {
+      if(vecesSalio > 0) {
+        document.getElementById('submitBtn').innerHTML = `Enviar (Te saliste ${vecesSalio} ${vecesSalio == 1 ? 'vez' : 'veces'}) <i class="fas fa-paper-plane ms-2"></i>`;
+      }
+    }
+
+    document.getElementById('modalSaliste').addEventListener('shown.bs.modal', () => {
       vecesSalio = ((parseInt(vecesSalio || "0")) + 1).toString();
       sessionStorage.setItem('vecesSalio', vecesSalio);
 
       document.getElementById('vecesSalioInput').value = vecesSalio;
 
       actualizarVecesSalio();
-    }
-    function actualizarVecesSalio() {
-      const textoVez = vecesSalio == 1 ? 'vez' : 'veces';
-      if(vecesSalio > 0) {
-        document.getElementById('submitBtn').innerHTML = `Enviar (Te saliste ${vecesSalio} ${textoVez}) <i class="fas fa-paper-plane ms-2"></i>`;
-      }
-    }
-
-    document.addEventListener('contextmenu', e => { if (!examenTerminado) e.preventDefault(); });
-
-    document.addEventListener('keydown', e => {
-      if (examenTerminado) return;
-      if (e.ctrlKey && ['c', 'C', 'p', 'P', 's', 'S'].includes(e.key)) {
-        e.preventDefault();
-        mostrarAdvertencia('screenshotWarning');
-      }
     });
-
-    document.addEventListener('keyup', e => {
-      if (examenTerminado) return;
-      if (e.key === 'PrintScreen') {
-        navigator.clipboard.writeText('');
-        mostrarAdvertencia('screenshotWarning');
-      }
-    });
-
     document.addEventListener('visibilitychange', () => {
       if (examenTerminado) return;
-      if (document.hidden) mostrarAdvertencia('leaveWarning');
+      if (document.hidden) { modalsaliste.show(); }
     });
 
     window.addEventListener('blur', () => {
       if (examenTerminado) return;      
-      mostrarAdvertencia('leaveWarning');
+      modalsaliste.show();
     });
 
-    function mostrarAdvertencia(id) {
-      const modal = document.getElementById(id);
-      if (modal) {
-        modal.classList.remove('d-none');
-        modal.classList.add('d-flex');
-      }
-    }
+    document.addEventListener('contextmenu', e => { 
+      alert("contextmenu");
+      if (!examenTerminado) e.preventDefault(); 
+    });
+
+    document.addEventListener('keyup', e => {
+      alert("keyup");
+      if (examenTerminado) return;      
+    });
 
     // ENVÍO DE DATOS
     const form = document.getElementById('studentForm');
@@ -309,7 +301,6 @@
         msgError('Hubo un problema al enviar. Por favor, intenta de nuevo.');
         submitBtn.classList.remove('d-none'); // Regresamos el botón si falló
       } finally {
-        // Este bloque se ejecuta SIEMPRE al final (tanto si funcionó como si falló)
         msgCargando(false); // Apaga el loader de forma segura
       }
     });
