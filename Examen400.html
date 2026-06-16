@@ -72,16 +72,6 @@
         </div>
       </div>
 
-      <div id="screenshotWarning"
-        class="position-fixed top-0 start-0 w-100 h-100 modal-overlay d-none flex-column justify-content-center align-items-center p-4 text-center">
-        <i class="fas fa-exclamation-triangle text-warning display-1 mb-4"></i>
-        <h2 class="text-white fw-bold mb-3">Acción no permitida</h2>
-        <p class="text-light fs-5 max-w-50">No está permitido hacer capturas de pantalla, copiar o imprimir este
-          formulario.</p>
-        <button onclick="document.getElementById('screenshotWarning').classList.replace('d-flex', 'd-none')"
-          class="btn btn-primary btn-lg mt-4 px-5">Entendido</button>
-      </div>
-
       <!-- Modal -->
       <div id="modalSaliste" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalSalisteLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -226,14 +216,16 @@
       modalsaliste.show();
     });
 
-    document.addEventListener('contextmenu', e => { 
-      alert("contextmenu");
-      if (!examenTerminado) e.preventDefault(); 
+    document.addEventListener('contextmenu', e => {
+      if (!examenTerminado) {
+        e.preventDefault();
+        msgAlerta('Acción no permitida'); 
+      } 
     });
 
     document.addEventListener('keyup', e => {
-      alert("keyup");
-      if (examenTerminado) return;      
+      if (examenTerminado) return;
+      msgAlerta('Acción no permitida');
     });
 
     // ENVÍO DE DATOS

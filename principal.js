@@ -159,6 +159,44 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+function msgAlerta(message, delay = 3000) {
+  // 1. Buscar o crear un contenedor para las alertas en tu HTML
+  let contenedor = document.getElementById('alerta-container');
+  if (!contenedor) {
+    contenedor = document.createElement('div');
+    contenedor.id = 'alerta-container';
+    contenedor.className = 'position-fixed top-0 end-0 p-3 fw-bold';
+    contenedor.style.zIndex = '1100'; // Por encima de modales
+    contenedor.style.marginTop = '45px';
+    contenedor.style.marginRight = '-12px';
+    document.body.appendChild(contenedor);
+  }
+
+  // 2. Crear el elemento wrapper individual para ESTA alerta
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = [
+    `<div class="alert border-0 text-white alert-dismissible fade show" style="background-color: #FE6100;" role="alert">`,
+    `   <div>${message}</div>`,
+    '   <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>',
+    '</div>'
+  ].join('');
+
+  // 3. Meter la alerta dentro del contenedor principal
+  contenedor.appendChild(wrapper);
+
+  // 4. LÓGICA TEMPORAL: Obtener la instancia de Bootstrap y cerrarla automáticamente
+  const alertaBootstrap = new bootstrap.Alert(wrapper.querySelector('.alert'));
+  
+  setTimeout(() => {
+    alertaBootstrap.close(); // Esto activa la animación de desvanecimiento de Bootstrap
+    
+    // Opcional: Eliminar el wrapper del DOM por completo después de que termine la animación
+    setTimeout(() => {
+      wrapper.remove();
+    }, 150); 
+  }, delay);
+}
+
 function msgError(mensaje) {  
   let me = document.getElementById('msgError');
   me.textContent = mensaje;  
