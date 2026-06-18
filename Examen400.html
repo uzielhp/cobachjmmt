@@ -5,106 +5,120 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>COBACH JMMT</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
   <link rel="stylesheet" href="principal.css">
-  <script src="principal.js"></script>  
-
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+  <script src="principal.js"></script>
 </head>
 
 <body>
   <div id="app-cargando"></div>
-  
+
   <div id="app-content">
     <header></header>
     <main>
       <div class="container">
-        <div class="card shadow-sm rounded-4 overflow-hidden">      
-          
-          <div class="text-center p-2">
-            <h1 class="border-bottom pb-2">
-              Examen
-            </h1>        
-            <p>Por favor, completa tus datos y responde las preguntas.</p>
-          </div>      
-
-          <form id="studentForm" class="card-body pb-2 md-4" novalidate>
-            <!-- Datos del Alumno -->
-            <input type="hidden" id="vecesSalioInput" name="vecesSalio" value="0">
-            <h5 class="border-bottom pb-2 mb-3" style="color: #FE6100;">
-              <i class="bi bi-mortarboard-fill"></i> Datos del Alumno
-            </h5>
-            <div class="row g-3">
-              <div class="col-12">
-                <label for="grupo" class="form-label fw-bold">Grupo / Turno *</label>
-                <select id="grupo" name="grupo" required class="form-select">
-                  <option value="" disabled selected>Selecciona tu grupo...</option>
-                  <option value="401M">401M</option>
-                  <option value="402M">402M</option>
-                  <option value="401V">401V</option>
-                </select>
-              </div>
-              <div class="col-md-6">
-                <label for="nombres" class="form-label fw-bold">Nombre(s) *</label>
-                <input type="text" id="nombres" name="nombres" required placeholder="Ej. María Fernanda"
-                  class="form-control">                
-              </div>
-              <div class="col-md-6">
-                <label for="apellidos" class="form-label fw-bold">Apellidos *</label>
-                <input type="text" id="apellidos" name="apellidos" required placeholder="Ej. Pérez Gómez"
-                  class="form-control">
-              </div>
-            </div>
-            
-            <!-- Datos de Preguntas -->
-            <h5 class="border-bottom pb-2 mb-4 mt-4" style="color: #FE6100;">
-              <i class="bi bi-patch-question-fill"></i> Preguntas
-            </h5>
-
-            <div id="preguntasContainer"></div>            
-
-            <button type="submit" id="submitBtn" class="btn btn-primary w-100 fw-bold shadow-sm py-3 mt-3 d-none">
-              Enviar mis respuestas <i class="fas fa-paper-plane ms-2"></i>
-            </button>
-          </form>
+        <div class="text-center mb-4">
+          <h1>Examen</h1>
+          <p>
+            Por favor, completa tus datos y responde las preguntas.
+          </p>
         </div>
-      </div>
 
-      <!-- Modal -->
-      <div id="modalSaliste" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalSalisteLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h1 class="modal-title fs-5" id="modalSalisteLabel">Te saliste de la página</h1>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              Detectamos que saliste del formulario. Por favor, mantente en esta pantalla.
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
+        <form id="studentForm" class="card-body pb-2 md-4" novalidate>
+          <!-- Datos del Alumno -->
+          <div class="container mb-3 border rounded p-3">
+            <div class="row row-cols-1">
+              <div class="col">
+                <h5 class="pb-2" style="color: #FE6100;">
+                  <i class="bi bi-mortarboard-fill"></i> Datos del Alumno
+                </h5>
+              </div>
+              <div class="col">
+                <div class="row g-3">
+                  <div class="col-12">
+                    <label for="grupo" class="form-label fw-bold">Grupo / Turno *</label>
+                    <select id="grupo" name="grupo" required class="form-select">
+                      <option value="" disabled selected>Selecciona tu grupo...</option>
+                      <option value="401M">401M</option>
+                      <option value="402M">402M</option>
+                      <option value="401V">401V</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="nombres" class="form-label fw-bold">Nombre(s) *</label>
+                    <input type="text" id="nombres" name="nombres" required placeholder="Ej. María Fernanda"
+                      class="form-control">
+                  </div>
+                  <div class="col-md-6">
+                    <label for="apellidos" class="form-label fw-bold">Apellidos *</label>
+                    <input type="text" id="apellidos" name="apellidos" required placeholder="Ej. Pérez Gómez"
+                      class="form-control">
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+
+          <!-- Datos de Preguntas -->
+          <div class="container mb-3 border rounded p-3">
+            <div class="row row-cols-1">
+              <div class="col">
+                <h5 class="pb-2" style="color: #FE6100;">
+                  <i class="bi bi-patch-question-fill"></i> Preguntas
+                </h5>
+              </div>
+              <div class="col">
+                <div id="preguntasContainer"></div>
+              </div>
+            </div>
+          </div>
+          <button type="submit" id="submitBtn" class="btn btn-primary w-100 fw-bold shadow-sm py-3 mt-3 d-none">
+            Enviar mis respuestas <i class="fas fa-paper-plane ms-2"></i>
+          </button>
+        </form>
       </div>
-    </main>
   </div>
 
-  <footer><footer>
+  <!-- Modal -->
+  <div id="modalSaliste" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="modalSalisteLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="modalSalisteLabel">Te saliste de la página</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Detectamos que saliste del formulario. Por favor, mantente en esta pantalla.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  </main>
+  </div>
 
-  <script>    
+  <footer></footer>
+
+  <script>
     window.addEventListener('load', (event) => {
-        msgCargando(true);        
-        actualizarVecesSalio();
-        cargarPreguntas();
-    });     
-    
+      msgCargando(true);
+      actualizarVecesSalio();
+      cargarPreguntas();
+    });
+
     // --- LÓGICA DEL EXAMEN  ---
     const modalsaliste = new bootstrap.Modal(document.getElementById('modalSaliste'));
-    let respuestasCorrectas = {};    
-    let examenTerminado = false;    
+    let respuestasCorrectas = {};
+    let examenTerminado = false;
     let URL400s = "";
 
     function revolverArreglo(arreglo) {
@@ -115,14 +129,14 @@
       return arreglo;
     }
 
-    async function cargarPreguntas() {                
-      URL400s = await obtenerUrlSem('400');      
+    async function cargarPreguntas() {
+      URL400s = await obtenerUrlSem('400');
       if (!URL400s) {
         msgError("Error al conectarse con la Hoja. Sin URL");
         examenTerminado = true;
       }
       else {
-        try {                    
+        try {
           const response = await fetch(URL400s);
           if (!response.ok) throw new Error('No se pudo conectar con Sheets');
 
@@ -160,7 +174,7 @@
               const valorSeguro = textoOpcion.toString().replace(/"/g, '&quot;');
 
               htmlContent += `
-                <div class="border rounded-3 p-3 mb-2 custom-radio-box">
+                <div class="border rounded-3 p-3 mb-2">
                   <div class="form-check m-0">
                     <input class="form-check-input" type="radio" name="pregunta${numPregunta}" id="${idOpcion}" value="${valorSeguro}" required>
                     <label class="form-check-label w-100" style="cursor: pointer;" for="${idOpcion}">${textoOpcion}</label>
@@ -173,27 +187,27 @@
 
           const container = document.getElementById('preguntasContainer');
           if (htmlContent) {
-            container.innerHTML = htmlContent;            
+            container.innerHTML = htmlContent;
             document.getElementById('submitBtn').classList.remove('d-none');
-          } 
+          }
           else {
             msgError("No se pudieron cargar las preguntas correctamente. Hoja vacía");
             examenTerminado = true;
-          }          
+          }
         }
-        catch (e) {          
-          msgError("Error al conectarse con la Hoja. Incorrecta",e);   
-          examenTerminado = true;     
-        }        
-      }  
-      msgCargando(false);    
+        catch (e) {
+          msgError("Error al conectarse con la Hoja. Incorrecta", e);
+          examenTerminado = true;
+        }
+      }
+      msgCargando(false);
     }
 
     // SISTEMA DE ADVERTENCIAS Y CONTADOR
     let vecesSalio = sessionStorage.getItem('vecesSalio') || null;
 
     function actualizarVecesSalio() {
-      if(vecesSalio > 0) {
+      if (vecesSalio > 0) {
         document.getElementById('submitBtn').innerHTML = `Enviar (Te saliste ${vecesSalio} ${vecesSalio == 1 ? 'vez' : 'veces'}) <i class="fas fa-paper-plane ms-2"></i>`;
       }
     }
@@ -201,8 +215,6 @@
     document.getElementById('modalSaliste').addEventListener('shown.bs.modal', () => {
       vecesSalio = ((parseInt(vecesSalio || "0")) + 1).toString();
       sessionStorage.setItem('vecesSalio', vecesSalio);
-
-      document.getElementById('vecesSalioInput').value = vecesSalio;
 
       actualizarVecesSalio();
     });
@@ -212,33 +224,33 @@
     });
 
     window.addEventListener('blur', () => {
-      if (examenTerminado) return;      
+      if (examenTerminado) return;
       modalsaliste.show();
     });
 
     document.addEventListener('contextmenu', e => {
       if (!examenTerminado) {
         e.preventDefault();
-        msgAlerta('Acción no permitida'); 
-      } 
+        msgAlerta('Acción no permitida');
+      }
     });
 
-    document.addEventListener('keyup', e => {
+    /*document.addEventListener('keyup', e => {
       if (examenTerminado) return;
       msgAlerta('Acción no permitida');
-    });
+    });*/
 
     // ENVÍO DE DATOS
     const form = document.getElementById('studentForm');
     const submitBtn = document.getElementById('submitBtn');
 
     form.addEventListener('submit', async e => {
-      e.preventDefault();      
+      e.preventDefault();
 
       if (!form.checkValidity()) {
         e.stopPropagation();
         form.classList.add('was-validated'); // Enciende los bordes rojos en los campos vacíos
-        
+
         // Extra: Hace scroll automático hacia el primer campo que el alumno dejó vacío
         const primerError = form.querySelector(':invalid');
         if (primerError) {
@@ -258,7 +270,7 @@
 
       // Ocultamos el botón para evitar dobles envíos accidentales
       submitBtn.classList.add('d-none');
-      msgError("Guardando y calificando...");      
+      msgError("Guardando y calificando...");
 
       const formData = new FormData(form);
       let aciertos = 0;
@@ -274,16 +286,17 @@
         }
       }
 
+      formData.append('vecesSalio', vecesSalio);
       formData.append('totalCorrectas', aciertos);
 
       try {
         // Con el await, JavaScript espera de verdad a que Google Sheets responda
         await fetch(URL400s, { method: 'POST', body: formData, mode: 'no-cors' });
-        
+
         examenTerminado = true;
         msgError("¡Tus respuestas se han guardado! Examen finalizado");
         sessionStorage.removeItem('vecesSalio');
-        
+
         // Deshabilitamos controles para que no los vuelvan a cambiar
         const inputs = form.querySelectorAll('input, select, button');
         inputs.forEach(input => input.disabled = true);

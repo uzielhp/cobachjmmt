@@ -1,19 +1,57 @@
 :root {
-  --fondo: #eff6ff; /* Definimos el nombre de la variable */
+  --fondo: #eff6ff;
+  /* Definimos el nombre de la variable */
+}
+
+/* Quitamos bordes de Modal */
+.modal-content {
+  border: none;
+  padding: 20px !important;
+}
+
+.modal-header {
+  color: #FE6100;
+  padding-bottom: 20px;
+}
+
+.modal-header,
+.modal-body,
+.modal-footer {
+  border: none;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.modal-body img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  /* Mantiene la proporción de la foto */
+  border-radius: 0.2rem;
 }
 
 @keyframes glow {
-    0%,100% { opacity: 1; }
-    50% { opacity: .5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: .5;
+  }
 }
 
 #app-content {
   display: none;
-  margin-top: 70px;
+  margin-top: 60px;
 }
 
 .glow {
-    animation: glow 2s infinite;
+  animation: glow 2s infinite;
 }
 
 /*Protección para no seleccionar texto */
@@ -28,29 +66,11 @@ body {
   height: 40px;
   margin-top: -20px;
   margin-bottom: -20px;
-  vertical-align: middle;  
+  vertical-align: middle;
 }
 
 .navbar {
   padding-top: 2px;
   padding-bottom: 2px;
   margin-bottom: 20px;
-}
-
-.card {
-  border: 1px solid #d1fae5;
-  border-radius: 1rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  background: white;
-  transition: transform 0.2s;
-}
-
-.custom-radio-box {
-  transition: all 0.2s ease-in-out;
-  position: relative;
-}
-
-.modal-overlay {
-  background-color: rgba(0, 0, 0, 0.85);
-  z-index: 1050;
 }
