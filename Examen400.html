@@ -17,6 +17,25 @@
 </head>
 
 <body>
+  <!-- Modal -->
+  <div id="modalSaliste" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="modalSalisteLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="modalSalisteLabel">Te saliste de la página</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Detectamos que saliste del formulario. Por favor, mantente en esta pantalla.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="app-cargando"></div>
 
   <div id="app-content">
@@ -35,7 +54,7 @@
           <div class="container mb-3 border rounded p-3">
             <div class="row row-cols-1">
               <div class="col">
-                <h5 class="pb-2" style="color: #FE6100;">
+                <h5 class="pb-2" style="color: var(--bg-titulo);">
                   <i class="bi bi-mortarboard-fill"></i> Datos del Alumno
                 </h5>
               </div>
@@ -69,7 +88,7 @@
           <div class="container mb-3 border rounded p-3">
             <div class="row row-cols-1">
               <div class="col">
-                <h5 class="pb-2" style="color: #FE6100;">
+                <h5 class="pb-2" style="color: var(--bg-titulo);">
                   <i class="bi bi-patch-question-fill"></i> Preguntas
                 </h5>
               </div>
@@ -83,27 +102,7 @@
           </button>
         </form>
       </div>
-  </div>
-
-  <!-- Modal -->
-  <div id="modalSaliste" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-    aria-labelledby="modalSalisteLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="modalSalisteLabel">Te saliste de la página</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          Detectamos que saliste del formulario. Por favor, mantente en esta pantalla.
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  </main>
+    </main>
   </div>
 
   <footer></footer>
@@ -118,7 +117,7 @@
     // --- LÓGICA DEL EXAMEN  ---
     const modalsaliste = new bootstrap.Modal(document.getElementById('modalSaliste'));
     let respuestasCorrectas = {};
-    let examenTerminado = false;
+    let examenTerminado = true;
     let URL400s = "";
 
     function revolverArreglo(arreglo) {
@@ -139,6 +138,8 @@
         try {
           const response = await fetch(URL400s);
           if (!response.ok) throw new Error('No se pudo conectar con Sheets');
+
+          examenTerminado = false;
 
           const data = await response.json();
           let htmlContent = '';

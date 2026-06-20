@@ -24,121 +24,102 @@
     <main>
       <div class="container">
         <div class="text-center mb-4">
-          <h1>El Peso Invisible de tu Internet</h1>
-          <p>
+          <h1 class="h2">El Peso Invisible de tu Internet</h1>
+          <p class="lead fs-6">
             ¿Sabías que el internet contamina? Todo lo que hacemos en línea requiere servidores físicos que consumen
-            enormes
-            cantidades de electricidad y agua a nivel mundial.
+            enormes cantidades de electricidad y agua a nivel mundial.
           </p>
         </div>
 
-        <!-- Sección de Información de Apps -->
-        <div class="row mb-4 text-center">
-          <div class="col-md-4">
-            <div class="card p-2 h-100 shadow-sm rounded">
-              <i class="bi bi-envelope-paper-fill text-primary fs-1"></i>
-              <h3 class="h5 fw-bold">Correos Olvidados</h3>
+        <div class="row g-3 mb-4 text-center">
+          <div class="col-12 col-md-4">
+            <div class="border rounded p-3 h-100">
+              <i class="bi bi-envelope-paper-fill fs-1 text-primary" aria-hidden="true"></i>
+              <h2 class="h5 pb-2" style="color: var(--bg-titulo);">Correos Olvidados</h2>
               <p class="small mb-0">
                 Esos boletines y correos antiguos que nunca borras ocupan espacio en servidores que están encendidos día
-                y
-                noche. ¡Borrarlos es como apagar un foco que nadie usa!
+                y noche. ¡Borrarlos es como apagar un foco que nadie usa!
               </p>
             </div>
           </div>
-          <div class="col-md-4">
-            <div class="card p-2 h-100 shadow-sm rounded">
-              <i class="bi bi-camera-video-fill text-danger fs-1"></i>
-              <h3 class="h5 fw-bold">Streaming y Redes</h3>
+          <div class="col-12 col-md-4">
+            <div class="border rounded p-3 h-100">
+              <i class="bi bi-play-btn-fill fs-1 text-danger" aria-hidden="true"></i>
+              <h2 class="h5 pb-2" style="color: var(--bg-titulo);">Streaming y Redes</h2>
               <p class="small mb-0">
                 Ver Netflix, YouTube o deslizar horas en TikTok es lo que más contamina. El video es muy "pesado" y
-                moverlo
-                por la red requiere mucha energía.
+                moverlo por la red requiere mucha energía.
               </p>
             </div>
           </div>
-          <div class="col-md-4">
-            <div class="card p-2 h-100 shadow-sm rounded">
-              <i class="bi bi-cloud-fill text-info fs-1"></i>
-              <h3 class="h5 fw-bold">La Nube Infinita</h3>
+          <div class="col-12 col-md-4">
+            <div class="border rounded p-3 h-100">
+              <i class="bi bi-cloud-arrow-up-fill fs-1 text-info" aria-hidden="true"></i>
+              <h2 class="h5 pb-2" style="color: var(--bg-titulo);">La Nube Infinita</h2>
               <p class="small mb-0">
                 Google Drive, iCloud... Guardamos fotos borrosas "por si acaso". Ese almacenamiento infinito requiere
-                discos
-                duros reales consumiendo luz real.
+                discos duros reales consumiendo luz real.
               </p>
             </div>
           </div>
         </div>
 
-        <!-- Calculadora Interactiva -->
-        <div class="card p-3 rounded shadow-sm mb-5">
-          <h2 class="h4 fw-bold mb-4 d-flex align-items-center gap-2" style="color: #FE6100;">
-            <i class="bi bi-calculator"></i> Calcula tu Huella Digital Anual
+        <div class="border rounded p-3 mb-4">
+          <h2 class="h4 fw-bold mb-4 d-flex align-items-center gap-2" style="color: var(--bg-titulo);">
+            <i class="bi bi-calculator" aria-hidden="true"></i> Calcula tu Huella Digital Anual
           </h2>
-
-          <div class="row">
-            <!-- Controles (Barras) -->
-            <div class="col-md-6 d-flex flex-column justify-content-center gap-4">
-
-              <!-- Barra de Correos -->
+          <div class="row g-4">
+            <div class="col-12 col-md-6 d-flex flex-column justify-content-center gap-4">
               <div>
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                  <label class="fw-medium">
-                    <i class="bi bi-envelope me-1"></i> Correos inútiles
+                  <label for="input-emails" class="fw-medium">
+                    <i class="bi bi-envelope me-1" aria-hidden="true"></i> Correos inútiles
                   </label>
-                  <span class="card rounded p-1" id="val-emails">500</span>
+                  <span class="badge border p-2" id="val-emails">500</span>
                 </div>
                 <input type="range" class="form-range" id="input-emails" min="0" max="10000" step="50" value="500">
               </div>
 
-              <!-- Barra de Streaming -->
               <div>
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                  <label class="fw-medium">
-                    <i class="bi bi-play-circle me-1"></i> Horas de video/día
+                  <label for="input-streaming" class="fw-medium">
+                    <i class="bi bi-play-circle me-1" aria-hidden="true"></i> Horas de video/día
                   </label>
-                  <span class="card rounded p-1" id="val-streaming">2
-                    horas</span>
+                  <span class="badge border p-2" id="val-streaming">2 horas</span>
                 </div>
                 <input type="range" class="form-range" id="input-streaming" min="0" max="12" step="0.5" value="2">
               </div>
 
-              <!-- Barra de Nube -->
               <div>
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                  <label class="fw-medium">
-                    <i class="bi bi-cloud me-1"></i> Gigas en la nube
+                  <label for="input-cloud" class="fw-medium">
+                    <i class="bi bi-cloud me-1" aria-hidden="true"></i> Gigas en la nube
                   </label>
-                  <span class="card rounded p-1" id="val-cloud">15 GB</span>
+                  <span class="badge border p-2" id="val-cloud">15 GB</span>
                 </div>
                 <input type="range" class="form-range" id="input-cloud" min="0" max="500" step="5" value="15">
               </div>
-
             </div>
 
-            <!-- Resultados -->
-            <div class="col-md-6">
-              <div class="card p-3 text-center h-100 d-flex flex-column justify-content-center">
-                <div class="h5 fw-bold mb-4">Tu huella de carbono digital genera:</div>
-                <div class="display-3 fw-bold mb-0" id="total-co2">0.0</div>
-                <div class="h5 fw-bold mb-4">kg de CO2/año</div>
-
-                <hr class="w-100 border-success opacity-25">
-
-                <p class="small mb-3">Para compensar esto o igualarlo, equivale a:</p>
+            <div class="col-12 col-md-6">
+              <div class="border rounded text-center p-3 h-100">
+                <div class="h6 fw-bold">Tu huella de carbono digital genera:</div>
+                <div class="display-3 fw-bold my-2 text-primary" id="total-co2">0.0</div>
+                <div class="h6 fw-bold mb-4">kg de CO2/año</div>
 
                 <div class="row g-3">
                   <div class="col-6">
-                    <div class="card p-3 h-100">
-                      <i class="bi bi-tree-fill fs-3 d-block mb-1"></i>
+                    <div class="border rounded p-3 h-100">
+                      <i class="bi bi-tree-fill fs-3 d-block mb-1 text-success" aria-hidden="true"></i>
                       <span class="fs-4 fw-bold d-block" id="trees-needed">0</span>
-                      <span class="small" style="font-size: 0.75rem;">Árboles necesarios al año</span>
+                      <small class="text-muted d-block" style="font-size: 0.75rem;">Árboles necesarios al año</small>
                     </div>
                   </div>
                   <div class="col-6">
-                    <div class="card p-3 h-100">
-                      <i class="bi bi-car-front-fill fs-3 d-block mb-1"></i>
+                    <div class="border rounded p-3 h-100">
+                      <i class="bi bi-car-front-fill fs-3 d-block mb-1 text-warning" aria-hidden="true"></i>
                       <span class="fs-4 fw-bold d-block" id="car-km">0</span>
-                      <span class="small" style="font-size: 0.75rem;">Km en coche de gasolina</span>
+                      <small class="text-muted d-block" style="font-size: 0.75rem;">Km en coche de gasolina</small>
                     </div>
                   </div>
                 </div>
@@ -146,20 +127,24 @@
             </div>
           </div>
 
-          <div class="d-flex gap-3 align-items-start" style="margin-top: 20px;">
-            <i class="bi bi-info-circle-fill text-primary fs-2"></i>
-            <p class="small">
-              <strong>¿Qué podemos hacer?</strong> ¡Cosas muy sencillas! Vacía tu papelera de correo de vez en cuando,
-              cancela
-              las suscripciones a boletines que no lees, no dejes videos reproduciéndose de fondo si no los estás
-              viendo, y
-              haz limpieza de las fotos borrosas de tu celular. ¡Pequeños hábitos hacen una gran diferencia mundial!
-            </p>
+          <div class="row pt-4">
+            <div class="col-12">
+              <div class="d-flex gap-3 align-items-start pt-3">
+                <i class="bi bi-info-circle-fill text-primary fs-3" aria-hidden="true"></i>
+                <p class="small mb-0">
+                  <strong>¿Qué podemos hacer?</strong> ¡Cosas muy sencillas! Vacía tu papelera de correo de vez en
+                  cuando, cancela las suscripciones a boletines que no lees, no dejes videos reproduciéndose de fondo si
+                  no los estás viendo, y haz limpieza de las fotos borrosas de tu celular. ¡Pequeños hábitos hacen una
+                  gran diferencia mundial!
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </main>
   </div>
+
   <footer></footer>
 
   <!-- Script de la lógica -->
