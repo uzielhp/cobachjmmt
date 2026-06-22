@@ -2,6 +2,7 @@ const CONEXION = 'https://script.google.com/macros/s/AKfycbxFXPyv_Cs7ffiYMhiy5OE
 let mnExamenes = sessionStorage.getItem('mnExamenes') || null;
 
 async function mostrarMenu() {
+
   document.getElementById('app-cargando').innerHTML = `
   <div class="w-100 text-center placeholder-glow">      
     <div class="placeholder bg-secondary py-3 mb-3 col-12">&nbsp;</div>      
@@ -38,8 +39,8 @@ async function mostrarMenu() {
   </div>
   `;
 
-  document.querySelector('header').innerHTML = `  
-  <!-- Modals.ini -->
+  //Modals
+  document.querySelector('header').innerHTML = `    
   <div class="modal fade" id="adminModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -130,65 +131,57 @@ async function mostrarMenu() {
       </div>
     </div>
   </div>
-  <!-- Modals.fin -->
-  
-  <nav class="navbar navbar-expand-md fixed-top">
-    <div class="container">
-      <!-- Logotipo Izquierdo -->
-      <a class="d-flex align-items-center">
-        <img class="logo" src="imgs/logo.png" alt="Logo">
+  `;
+
+  //Nav
+  document.querySelector('header').innerHTML += `
+  <div class="fixed-top" style="padding: 0.75rem 0.5rem; background-color: var(--bg-obsidian);">
+    <div class="d-flex align-items-center gap-2">
+      <button class="navbar-toggler custom-toggler" type="button" data-bs-toggle="offcanvas"
+        data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions" aria-label="Abrir menú">
+        <i class="bi bi-grid-fill fs-1"></i>
+      </button>
+
+      <div class="btn position-relative" style="border: none; padding: 0; margin: 0; background-color: transparent;">
+        <img class="logo" src="imgs/logo.png" alt="Logo" style="height: 40px; width: auto;">
+        <span id="msgCargando1" class="position-absolute top-0 start-100 translate-middle badge rounded-pill"
+          style="background-color: var(--bg-titulo);">
+          <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+          <span role="status">Cargando...</span>
+        </span>
+      </div>
+
+      <a href="#" data-bs-toggle="modal" data-bs-target="#adminModal" class="ms-auto">
+        <img class="logo" src="imgs/adm.png" alt="Administración" style="height: 35px; width: auto;">
       </a>
-
-      <!-- Acciones rápidas a la derecha -->
-      <div class="d-flex align-items-center order-md-last gap-3">
-
-        <!-- Logotipo Derecho -->
-        <div class="d-flex align-items-center">
-          <a href="#" data-bs-toggle="modal" data-bs-target="#adminModal"><img class="logo" src="imgs/adm.png" alt="ADM"></a>
-        </div>
-
-        <!-- Botón de Menú Móvil Personalizado -->
-        <button class="navbar-toggler custom-toggler" type="button" data-bs-toggle="collapse"
-          data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false"
-          aria-label="Toggle navigation">
-          <i class="bi bi-grid-fill"></i>
-        </button>
-      </div>
-
-      <!-- Enlaces del Menú Centralizados y Elegantes -->
-      <div class="collapse navbar-collapse justify-content-center" id="navbarContent">
-        <ul class="navbar-nav gap-2 mt-3 mt-md-0">
-          <li class="nav-item">
-            <a class="nav-link" href="index.html" id="nav-inicio">Inicio</a>
-          </li>
-
-          <li class="nav-item dropdown">
-            <a class="nav-link inline-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown"
-              aria-expanded="false">
-              Acts. 200s <i class="bi bi-chevron-down custom-arrow"></i>
-            </a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="200_Act10.html">Act. Contaminación digital</a>
-              </li>
-            </ul>
-          </li>
-
-          <li class="nav-item dropdown" id="dropdownExamenes">
-            <a class="nav-link inline-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown"
-              aria-expanded="false">
-              Examenes <i class="bi bi-chevron-down custom-arrow"></i>
-            </a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="Examen400.html">400s</a></li>
-            </ul>
-          </li>
-        </ul>
-      </div>
     </div>
-  </nav>
-  <div id="msgCargando1" class="placeholder-glow m-0 p-0" style="line-height: 0; visibility: hidden;">
-    <span class="placeholder col-12 d-block"
-      style="background-color: var(--bg-titulo); padding: 0 !important; margin: 0 !important;"></span>
+  </div>
+
+  <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptions"
+    aria-labelledby="offcanvasWithBothOptionsLabel">
+    <div class="offcanvas-header">
+      <h1 class="h4 offcanvas-title" id="offcanvasWithBothOptionsLabel">COBACH JMMT</h1>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="index.html" id="nav-inicio">Inicio</a>
+        </li>
+        <li class="nav-item">
+          <h2 class="h5" style="color: var(--bg-titulo);">Acts. 200s</h2>
+        </li>
+        <li>
+          <a class="nav-link" href="200_Act10.html">Act. Contaminación digital</a>
+        </li>
+        <li class="nav-item">
+          <h2 class="h5" style="color: var(--bg-titulo);">Exámenes</h2>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="Examen400.html">400s</a>
+        </li>
+      </ul>
+    </div>
   </div>
   `;
 
@@ -212,12 +205,16 @@ async function mostrarMenu() {
       mnExamenes = String(await obtenerUrlSem('Menu')).toLowerCase();
       sessionStorage.setItem('mnExamenes', mnExamenes);
     }
-    if (mnExamenes === "true") { document.getElementById('dropdownExamenes').classList.remove('d-none'); }
+    const dropdownExamenes = document.getElementById('dropdownExamenes');
+    if (dropdownExamenes && mnExamenes === "true") {
+      dropdownExamenes.classList.remove('d-none');
+    }
+
     document.getElementById('app-cargando').style.display = 'none';
     document.getElementById('app-content').style.display = 'block';
   }
-  catch (e) { msgError("Error al validar el menú de exámenes:", e); }
-  msgCargando(false);
+  catch (e) { msgError("Error al validar el menú (Examenes)", e); }
+  finally { msgCargando(false); }
 }
 
 // ==========================================

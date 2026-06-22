@@ -13,6 +13,7 @@ body {
   -ms-user-select: none;
   user-select: none;
   background-color: var(--bg-obsidian);
+  padding-top: 61px;
 }
 
 p,
@@ -93,7 +94,7 @@ span {
 
 #app-content {
   display: none;
-  margin-top: 50px;
+  /*margin-top: 50px;*/
 }
 
 .glow {
@@ -105,27 +106,17 @@ span {
   width: auto;
 }
 
-/* ==========================================================================
-   Configuración Global de Variables
-   ========================================================================== */
-.navbar {
-  background-color: var(--bg-obsidian);
-  padding: 5px 0 5px 0;
+/* Botón MENU.ini */
+.custom-toggler:hover i {
+  color: var(--bg-titulo);
 }
 
-/* ==========================================================================
-   1. MENÚ PRINCIPAL: Subrayado Naranja en el Texto
-   ========================================================================== */
-
 .nav-link {
-  color: rgba(255, 255, 255, 0.75) !important;
   position: relative;
-  /* Espaciado vertical */
-  margin: 0 5px;
-  /* Separación entre menús */
+  margin: 0 0 20px 0;
+  padding: 0;
   transition: color 0.3s ease;
   display: inline-flex !important;
-  /* Ajusta el contenedor al ancho del texto */
 }
 
 .nav-link:hover,
@@ -147,130 +138,9 @@ span {
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Ajuste inteligente: si el menú tiene la flecha (.custom-arrow), 
-   la línea no se dibuja debajo de ella */
-.nav-link:has(.custom-arrow)::after {
-  width: calc(100% - 20px);
-}
-
 /* Animación al pasar el mouse en el menú principal */
 .nav-link:hover::after,
 .nav-link:focus::after {
   transform: scaleX(1);
   transform-origin: bottom left;
-}
-
-/* Icono de la flecha */
-.custom-arrow {
-  font-size: 0.75rem;
-  margin-left: 6px;
-  opacity: 0.6;
-  display: inline-block;
-  transition: transform 0.3s ease, opacity 0.3s ease;
-}
-
-
-/* ==========================================================================
-   2. SUBMENÚS (DROPDOWNS): Comportamiento y Subrayado Propio
-   ========================================================================== */
-
-/* Despliegue fluido en Escritorio (Hover) */
-@media (min-width: 768px) {
-  .navbar .dropdown:hover .dropdown-menu {
-    display: block;
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-  }
-
-  .navbar .dropdown-menu {
-    display: block;
-    opacity: 0;
-    transform: translateY(10px);
-    pointer-events: none;
-    background-color: var(--bg-obsidian);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    padding: 0;
-  }
-
-  /* Rotación de flecha en hover */
-  .navbar .dropdown:hover .custom-arrow {
-    transform: rotate(180deg);
-    opacity: 1;
-    color: var(--bg-titulo);
-  }
-}
-
-/* Elementos internos del submenú */
-.dropdown-item {
-  color: rgba(255, 255, 255, 0.8) !important;
-  padding: 0.5rem 1.5rem !important;
-  margin: 0px 0 5px 0px;
-  /* 1.5rem de espacio a los lados */
-  position: relative;
-  background-color: transparent !important;
-  /* Quitamos el fondo gris nativo de Bootstrap */
-  transition: color 0.3s ease;
-  display: block;
-  width: 100%;
-}
-
-/* Línea naranja exclusiva para el texto del submenú */
-.dropdown-item::after {
-  content: '';
-  position: absolute;
-  left: 1.5rem;
-  /* Empieza exactamente donde inicia el texto */
-  bottom: 4px;
-  /* Separación del borde inferior del item */
-  width: calc(100% - 3rem);
-  /* Resta los paddings laterales para medir igual que el texto */
-  height: 2px;
-  background-color: var(--bg-titulo);
-  transform: scaleX(0);
-  transform-origin: bottom right;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* Animación al pasar el mouse en el submenú */
-.dropdown-item:hover,
-.dropdown-item:focus {
-  color: #ffffff !important;
-  background-color: transparent !important;
-  /* Mantiene el fondo limpio */
-}
-
-.dropdown-item:hover::after,
-.dropdown-item:focus::after {
-  transform: scaleX(1);
-  transform-origin: bottom left;
-}
-
-/* =========================================
-   Estilos para el Menú Móvil (Toggler)
-   ========================================= */
-
-/* Quitar el borde por defecto de Bootstrap para un look más limpio */
-.custom-toggler {
-  border: none;
-  padding: 0;
-}
-
-/* Quitar el contorno (box-shadow) que aparece al hacer clic (focus) */
-.custom-toggler:focus {
-  box-shadow: none;
-  outline: none;
-}
-
-/* Darle estilo y tamaño al ícono de Bootstrap (bi-grid-fill) */
-.custom-toggler i {
-  font-size: 2rem;
-  /* Tamaño del ícono */
-}
-
-/* Efecto hover al pasar el ratón por encima */
-.custom-toggler:hover i {
-  color: var(--bg-titulo);
 }
