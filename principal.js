@@ -75,8 +75,8 @@ async function mostrarMenu() {
           <form id="formAdminCfgs">
             <div class="container-fluid">
               <div class="row mb-3">
-                <label for="primero" class="col-2 col-form-label">Primero</label>
-                <div class="col-10">
+                <label for="primero" class="col-sm-2 col-form-label">Primero</label>
+                <div class="col-sm-10">
                   <input type="text" class="form-control" id="primero">
                 </div>
               </div>
