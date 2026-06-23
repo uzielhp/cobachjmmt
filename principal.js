@@ -227,7 +227,7 @@ async function mostrarMenu() {
       </div>
 
       <a href="#" data-bs-toggle="modal" data-bs-target="#adminModal" class="ms-auto">
-        <img class="logo" src="imgs/adm.png" alt="Administración" style="height: 35px; width: auto;">
+        <img class="logo" src="imgs/adm.png" alt="Administración" style="height: 40px; width: auto;">
       </a>
     </div>
   </div>
