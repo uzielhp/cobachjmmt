@@ -4,37 +4,113 @@ let mnExamenes = sessionStorage.getItem('mnExamenes') || null;
 async function mostrarMenu() {
 
   document.getElementById('app-cargando').innerHTML = `
-  <div class="placeholder-glow fixed-top" style="z-index: 1100; margin-top: 0;">
-    <div class="row mb-3">
-      <div class="col-12 col-md-12">
-        <span class="placeholder bg-secondary py-4 col-12"></span>
+  <div aria-hidden="true" class="placeholder-glow d-flex flex-column bg-dark min-vh-100 m-0 p-0">
+
+    <div class="navbar" style="height: 50px;">
+      <div class="container-fluid d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2 col-4 col-md-2">
+          <span class="placeholder col-3 py-3 bg-secondary bg-opacity-70 rounded-circle"></span>
+          <span class="placeholder col-8 py-3 bg-secondary bg-opacity-50 rounded"></span>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-end gap-3 col-4 col-md-2">
+          <span class="placeholder col-3 py-2 bg-secondary bg-opacity-25 rounded"></span>
+          <span class="placeholder p-3 bg-secondary bg-opacity-70 rounded-circle"
+            style="width: 32px; height: 32px;"></span>
+        </div>
       </div>
     </div>
-    <div class="row mb-3">
-      <div class="col-12 col-md-8">
-        <span class="placeholder bg-secondary py-3 col-12"></span>
-      </div>
-      <div class="col-12 col-md-4">
-        <span class="placeholder bg-secondary py-3 col-12"></span>
-      </div>
-    </div>
-    <div class="row mb-3">
-      <div class="col-12 col-md-4">
-        <span class="placeholder bg-secondary py-3 col-12"></span>
-      </div>
-      <div class="col-12 col-md-4">
-        <span class="placeholder bg-secondary py-3 col-12"></span>
-      </div>
-      <div class="col-12 col-md-4">
-        <span class="placeholder bg-secondary py-3 col-12"></span>
-      </div>
-    </div>
-    <div class="row mb-3">
-      <div class="col-12 col-md-6">
-        <span class="placeholder bg-secondary py-3 col-12"></span>
-      </div>
-      <div class="col-12 col-md-6">
-        <span class="placeholder bg-secondary py-3 col-12"></span>
+
+    <div class="container-fluid p-2 flex-grow-1 d-flex flex-column">
+
+      <div class="row g-2 flex-grow-1">
+
+        <div class="col-12 col-md-6 d-flex">
+          <div
+            class="w-100 placeholder bg-secondary bg-opacity-25 rounded d-flex flex-column p-3 justify-content-between">
+            <div class="row w-100 m-0">
+              <span class="placeholder col-4 py-3 bg-secondary bg-opacity-50 rounded"></span>
+            </div>
+            <div class="row w-100 m-0 justify-content-center">
+              <span class="placeholder col-6 py-5 bg-secondary bg-opacity-50 rounded-3"></span>
+            </div>
+            <div class="row w-100 m-0">
+              <span class="placeholder col-12 py-2 bg-secondary bg-opacity-50 rounded"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6 d-flex">
+          <div
+            class="w-100 placeholder bg-secondary bg-opacity-25 rounded d-flex flex-column p-3 justify-content-between">
+            <div class="row w-100 m-0 gap-2">
+              <span class="placeholder col-8 py-3 bg-secondary bg-opacity-50 rounded"></span>
+              <span class="placeholder col-5 py-2 bg-secondary bg-opacity-50 rounded"></span>
+            </div>
+            <div class="row w-100 m-0 gap-2 justify-content-end">
+              <span class="placeholder col-6 py-2 bg-secondary bg-opacity-50 rounded"></span>
+              <span class="placeholder col-4 py-2 bg-secondary bg-opacity-50 rounded"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6 d-flex">
+          <div
+            class="w-100 placeholder bg-secondary bg-opacity-25 rounded d-flex flex-column p-3 justify-content-between">
+            <div class="row w-100 m-0">
+              <span class="placeholder col-5 py-3 bg-secondary bg-opacity-50 rounded"></span>
+            </div>
+            <div class="row w-100 m-0 justify-content-center">
+              <span class="placeholder col-8 py-4 bg-secondary bg-opacity-50 rounded"></span>
+            </div>
+            <div class="row w-100 m-0">
+              <span class="placeholder col-10 py-2 bg-secondary bg-opacity-50 rounded"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6 d-flex">
+          <div
+            class="w-100 placeholder bg-secondary bg-opacity-25 rounded d-flex flex-column p-3 justify-content-between">
+            <div class="row w-100 m-0 gap-2">
+              <span class="placeholder col-7 py-2 bg-secondary bg-opacity-50 rounded"></span>
+              <span class="placeholder col-9 py-2 bg-secondary bg-opacity-50 rounded"></span>
+              <span class="placeholder col-6 py-2 bg-secondary bg-opacity-50 rounded"></span>
+            </div>
+            <div class="row w-100 m-0 justify-content-end">
+              <span class="placeholder col-4 py-3 bg-secondary bg-opacity-50 rounded"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6 d-flex">
+          <div
+            class="w-100 placeholder bg-secondary bg-opacity-25 rounded d-flex flex-column p-3 justify-content-between">
+            <div class="row w-100 m-0 gap-2">
+              <span class="placeholder col-7 py-2 bg-secondary bg-opacity-50 rounded"></span>
+              <span class="placeholder col-9 py-2 bg-secondary bg-opacity-50 rounded"></span>
+              <span class="placeholder col-6 py-2 bg-secondary bg-opacity-50 rounded"></span>
+            </div>
+            <div class="row w-100 m-0 justify-content-end">
+              <span class="placeholder col-4 py-3 bg-secondary bg-opacity-50 rounded"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6 d-flex">
+          <div
+            class="w-100 placeholder bg-secondary bg-opacity-25 rounded d-flex flex-column p-3 justify-content-between">
+            <div class="row w-100 m-0 gap-2">
+              <span class="placeholder col-7 py-2 bg-secondary bg-opacity-50 rounded"></span>
+              <span class="placeholder col-9 py-2 bg-secondary bg-opacity-50 rounded"></span>
+              <span class="placeholder col-6 py-2 bg-secondary bg-opacity-50 rounded"></span>
+            </div>
+            <div class="row w-100 m-0 justify-content-end">
+              <span class="placeholder col-4 py-3 bg-secondary bg-opacity-50 rounded"></span>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -136,7 +212,7 @@ async function mostrarMenu() {
 
   //Nav
   document.querySelector('header').innerHTML += `
-  <div class="fixed-top" style="padding: 0 0.5rem; background-color: var(--bg-obsidian);">
+  <div class="fixed-top" style="padding: 0 5px; background-color: var(--bg-obsidian); height: 50px;">
     <div class="d-flex align-items-center gap-2">
       <button class="navbar-toggler custom-toggler" type="button" data-bs-toggle="offcanvas"
         data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions" aria-label="Abrir menú">
@@ -168,11 +244,11 @@ async function mostrarMenu() {
           <a class="nav-link h6" href="index.html" id="nav-inicio">Inicio</a>
         </li>
         <li class="nav-item">
-          <h2 class="h5" style="color: var(--bg-titulo);">Acts. 200s</h2>
+          <h2 class="h6 fw-bold" style="color: var(--bg-titulo);">Acts. 200s</h2>
           <a class="nav-link h6" href="200_Act10.html">Act. Contaminación digital</a>
         </li>        
         <li class="nav-item" id="mnExamenes1">
-          <h2 class="h5" style="color: var(--bg-titulo);">Exámenes</h2>
+          <h2 class="h6 fw-bold" style="color: var(--bg-titulo);">Exámenes</h2>
           <a class="nav-link h6" href="Examen400.html">400s</a>
         </li>        
       </ul>

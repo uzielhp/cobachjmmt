@@ -13,7 +13,6 @@ body {
   -ms-user-select: none;
   user-select: none;
   background-color: var(--bg-obsidian);
-  padding-top: 50px;
 }
 
 p,
@@ -110,16 +109,17 @@ span {
 
 .nav-item {
   /*background-color: var(--bg-obsidian);*/
-  padding-top: 5px;
-  padding-bottom: 5px;
+  border-left: 2px solid var(--bg-titulo);
+  margin-bottom: 5px;
+  padding-left: 10px;
 }
 
 .nav-link {
   position: relative;
-  margin: 0 0 5px 0;
-  padding: 0;
   transition: color 0.3s ease;
   display: inline-flex !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 .nav-link:hover,

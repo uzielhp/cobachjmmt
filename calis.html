@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menú Vertical con Subtítulos</title>
+  <style>
+    /* 2. CONTENEDOR DEL MENÚ VERTICAL */
+    .sidebar {
+      width: 280px;
+      background-color: #1e2229;
+      /* Fondo oscuro elegante */
+      color: #ecf0f1;
+      min-height: 100vh;
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Encabezado del Menú (Opcional - para un Logo o Nombre de App) */
+    .sidebar-brand {
+      padding: 0 25px 20px 25px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      color: #ffffff;
+      /* Línea inferior sutil con el efecto claro que querías */
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 20px;
+    }
+
+    /* 3. BLOQUE DE CATEGORÍA / TÍTULO PRINCIPAL */
+    .menu-category {
+      margin-bottom: 25px;
+    }
+
+    /* Título de la categoría (No es un enlace, sirve para agrupar) */
+    .category-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #7f8c8d;
+      /* Color gris suave para que no compita con los enlaces */
+      padding: 0 25px;
+      margin-bottom: 10px;
+      display: block;
+      font-weight: 700;
+    }
+
+    /* Lista de elementos del menú */
+    .menu-list {
+      list-style: none;
+    }
+
+    /* Enlaces principales (Subtítulos / Secciones) */
+    .menu-item a {
+      display: flex;
+      align-items: center;
+      padding: 12px 25px;
+      color: #bdc3c7;
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      border-left: 4px solid transparent;
+      /* Reserva espacio para el borde de enfoque */
+    }
+
+    /* Efecto Hover (Pasar el mouse por encima) */
+    .menu-item a:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.05);
+      border-left: 4px solid #3498db;
+      /* Borde azul de acento brillante */
+    }
+
+    /* Clase para el elemento actualmente activo o seleccionado */
+    .menu-item.active a {
+      color: #ffffff;
+      background-color: rgba(52, 152, 219, 0.15);
+      border-left: 4px solid #3498db;
+      font-weight: 600;
+    }
+
+    /* 4. ÁREA DE CONTENIDO (Para pruebas de espacio) */
+    .main-content {
+      flex-grow: 1;
+      padding: 40px;
+      color: #333;
+    }
+  </style>
+</head>
+
+<body>
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      PANEL DE CONTROL
+    </div>
+
+    <section class="menu-category">
+      <span class="category-title">Inicio y Métricas</span>
+      <ul class="menu-list">
+        <li class="menu-item active">
+          <a href="#dashboard">Vista General</a>
+        </li>
+        <li class="menu-item">
+          <a href="#analitica">Estadísticas Rápidas</a>
+        </li>
+        <li class="menu-item">
+          <a href="#reportes">Reportes Mensuales</a>
+        </li>
+      </ul>
+    </section>
+
+    <section class="menu-category">
+      <span class="category-title">Administración</span>
+      <ul class="menu-list">
+        <li class="menu-item">
+          <a href="#usuarios">Gestión de Usuarios</a>
+        </li>
+        <li class="menu-item">
+          <a href="#roles">Roles y Permisos</a>
+        </li>
+        <li class="menu-item">
+          <a href="#seguridad">Seguridad de Cuenta</a>
+        </li>
+      </ul>
+    </section>
+
+    <section class="menu-category">
+      <span class="category-title">Configuración</span>
+      <ul class="menu-list">
+        <li class="menu-item">
+          <a href="#preferencias">Preferencias</a>
+        </li>
+        <li class="menu-item">
+          <a href="#notificaciones">Notificaciones</a>
+        </li>
+      </ul>
+    </section>
+  </aside>
+
+  <main class="main-content">
+    <h1>Bienvenido al Sistema</h1>
+    <p>El menú de la izquierda se mantendrá fijo y adaptará su altura automáticamente al 100% de la pantalla.</p>
+  </main>
+
+</body>
+
+</html>
