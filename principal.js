@@ -67,7 +67,7 @@ async function mostrarMenu() {
     </div>
   </div>
   <div class="modal fade" id="adminModalCfgs" aria-hidden="true" tabindex="-1">
-    <div class="modal-dialog modal-fullscreen modal-custom-top">
+    <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="exampleModalToggleLabel2">Administración</h1>
@@ -171,7 +171,7 @@ async function mostrarMenu() {
           <h2 class="h5" style="color: var(--bg-titulo);">Acts. 200s</h2>
           <a class="nav-link h6" href="200_Act10.html">Act. Contaminación digital</a>
         </li>        
-        <li class="nav-item">
+        <li class="nav-item" id="mnExamenes1">
           <h2 class="h5" style="color: var(--bg-titulo);">Exámenes</h2>
           <a class="nav-link h6" href="Examen400.html">400s</a>
         </li>        
@@ -188,19 +188,27 @@ async function mostrarMenu() {
   </div>
   `;
 
-  msgCargando(true);
   try {
+    msgCargando(true);
     if (mnExamenes === null) {
       mnExamenes = String(await obtenerUrlSem('Menu')).toLowerCase();
       sessionStorage.setItem('mnExamenes', mnExamenes);
     }
-    const dropdownExamenes = document.getElementById('dropdownExamenes');
-    if (dropdownExamenes && mnExamenes === "true") {
-      dropdownExamenes.classList.remove('d-none');
+    const mnExamenes1 = document.getElementById('mnExamenes1');
+    if (mnExamenes1 && mnExamenes === "true") {
+      mnExamenes1.style.visibility = 'visible';
+    }
+    else {
+      mnExamenes1.style.visibility = 'hidden';
     }
 
     document.getElementById('app-cargando').style.display = 'none';
     document.getElementById('app-content').style.display = 'block';
+
+    if (window.location.pathname.split('/').pop() == "Examen400.html" && mnExamenes === "false") {
+      window.location.href = "index.html";
+      return;
+    }
   }
   catch (e) { msgError("Error al validar el menú (Examenes)", e); }
   finally { msgCargando(false); }
@@ -227,50 +235,57 @@ document.addEventListener('DOMContentLoaded', () => {
   // 3. Envío y validación del formulario (Responde a Enter y a Click en Guardar)
   if (formulario) {
     formulario.addEventListener('submit', async e => {
-      e.preventDefault(); // Evita recarga de página por comportamiento nativo submit
-      msgCargando(true);
+      try {
+        e.preventDefault();
+        msgCargando(true);
 
-      const contraerror = document.getElementById('contraerror');
-      const contra = await obtenerUrlSem("Contra");
+        // Cerramos el modal de autenticación de forma segura
+        const modalActual = bootstrap.Modal.getInstance(htmlAdminModal) || new bootstrap.Modal(htmlAdminModal);
+        modalActual.hide();
 
-      // Añadimos estilos de validación visual de Bootstrap
-      formulario.classList.add('was-validated');
+        const contraerror = document.getElementById('contraerror');
+        const contra = await obtenerUrlSem("Contra");
 
-      if (formulario.checkValidity()) {
-        if (contratxt.value === contra.toString()) {
-          formulario.classList.remove('was-validated');
-          formulario.reset();
-          contratxt.classList.remove('is-invalid');
-          contratxt.classList.remove('is-valid');
-          contraerror.style.display = 'none';
+        // Añadimos estilos de validación visual de Bootstrap
+        formulario.classList.add('was-validated');
 
-          // Cerramos el modal de autenticación de forma segura
-          const modalActual = bootstrap.Modal.getInstance(htmlAdminModal) || new bootstrap.Modal(htmlAdminModal);
-          modalActual.hide();
+        if (formulario.checkValidity()) {
+          if (contratxt.value === contra.toString()) {
+            formulario.classList.remove('was-validated');
+            formulario.reset();
+            contratxt.classList.remove('is-invalid');
+            contratxt.classList.remove('is-valid');
+            contraerror.style.display = 'none';
 
-          // Cargamos configuraciones y abrimos el segundo modal de pantalla completa
-          await obtenerUrlSemestres();
-          adminModalCfgs.show();
-        }
-        else {
-          contratxt.classList.remove('is-valid');
-          contratxt.classList.add('is-invalid');
-          contraerror.style.display = 'block';
+            // Cargamos configuraciones y abrimos el segundo modal de pantalla completa
+            await obtenerUrlSemestres();
+            adminModalCfgs.show();
+          }
+          else {
+            contratxt.classList.remove('is-valid');
+            contratxt.classList.add('is-invalid');
+            contraerror.style.display = 'block';
+          }
         }
       }
-      msgCargando(false);
+      catch (e) { msgError("Error al validar contraseña", e); }
+      finally { msgCargando(false); }
     });
   }
 
   // 4. Guardar Configuraciones del Segundo Modal (adminModalCfgs)
   if (btnGuardarCfgs) {
     btnGuardarCfgs.addEventListener('click', async function (e) {
-      e.preventDefault();
-      msgCargando(true);
-      await guardarUrlSemestres();
-      adminModalCfgs.hide();
-      msgCargando(false);
-      msgAlerta("Configuraciones guardadas");
+      try {
+        e.preventDefault();
+        msgCargando(true);
+
+        adminModalCfgs.hide();
+        await guardarUrlSemestres();
+        msgAlerta("Configuraciones guardadas");
+      }
+      catch (e) { msgError("Error al guardar configuraciones ADM", e); }
+      finally { msgCargando(false); }
     });
   }
 });
@@ -352,7 +367,7 @@ async function obtenerUrlSem(semestre) {
     }
     return null;
   } catch (e) {
-    msgError("Error al conectarse con Hoja ADM:", e);
+    msgError("Error Hoja ADM", e);
     return null;
   }
 }
