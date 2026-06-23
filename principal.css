@@ -13,7 +13,7 @@ body {
   -ms-user-select: none;
   user-select: none;
   background-color: var(--bg-obsidian);
-  padding-top: 61px;
+  padding-top: 50px;
 }
 
 p,
@@ -54,7 +54,7 @@ span {
   border-radius: 0.2rem;
 }
 
-.btn-close {
+.btn-close-n {
   /* 1. Mantener la 'X' interna de Bootstrap 100% blanca pura */
   --bs-btn-close-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e");
   filter: none;
@@ -69,13 +69,25 @@ span {
     background-color 0.2s ease;
 }
 
-.btn-close:hover,
-.btn-close:focus {
+.btn-close-n:hover,
+.btn-close-n:focus {
   opacity: 1;
   background-color: var(--bg-titulo);
   border-color: var(--bg-titulo);
   box-shadow: none;
   transform: scale(1) rotate(90deg);
+}
+
+/* Modificación del comportamiento fullscreen con desfase superior */
+.modal-custom-top.modal-fullscreen {
+  margin-top: 50px;
+  min-height: calc(100vh - 50px) !important;
+  height: calc(100vh - 50px) !important;
+}
+
+.modal-custom-top.modal-fullscreen .modal-content {
+  min-height: calc(100vh - 50px) !important;
+  height: calc(100vh - 50px) !important;
 }
 
 /* Modal.fin */
@@ -111,9 +123,15 @@ span {
   color: var(--bg-titulo);
 }
 
+.nav-item {
+  /*background-color: var(--bg-obsidian);*/
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
 .nav-link {
   position: relative;
-  margin: 0 0 20px 0;
+  margin: 0 0 5px 0;
   padding: 0;
   transition: color 0.3s ease;
   display: inline-flex !important;
@@ -143,4 +161,48 @@ span {
 .nav-link:focus::after {
   transform: scaleX(1);
   transform-origin: bottom left;
+}
+
+/* EFECTO LOGO RECARGA */
+.contenedor-logo {
+  position: relative;
+  display: inline-flex;
+  padding: 5px;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.contenedor-logo img.logo {
+  position: relative;
+  z-index: 1;
+  display: block;
+}
+
+.contenedor-logo.is-loading::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(transparent, transparent, transparent, var(--bg-titulo));
+  animation: girar-linea 2s linear infinite;
+}
+
+.contenedor-logo.is-loading::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background-color: var(--bg-obsidian);
+  border-radius: 3px;
+}
+
+@keyframes girar-linea {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }

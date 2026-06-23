@@ -4,38 +4,39 @@ let mnExamenes = sessionStorage.getItem('mnExamenes') || null;
 async function mostrarMenu() {
 
   document.getElementById('app-cargando').innerHTML = `
-  <div class="w-100 text-center placeholder-glow">      
-    <div class="placeholder bg-secondary py-3 mb-3 col-12">&nbsp;</div>      
-  </div>
-
-  <div class="container text-center placeholder-glow">    
+  <div class="placeholder-glow fixed-top" style="z-index: 1100; margin-top: 0;">
+    <div class="row mb-3">
+      <div class="col-12 col-md-12">
+        <span class="placeholder bg-secondary py-4 col-12"></span>
+      </div>
+    </div>
     <div class="row mb-3">
       <div class="col-12 col-md-8">
-      <span class="placeholder bg-secondary py-3 col-12"></span>
+        <span class="placeholder bg-secondary py-3 col-12"></span>
       </div>
       <div class="col-12 col-md-4">
-      <span class="placeholder bg-secondary py-3 col-12"></span>
+        <span class="placeholder bg-secondary py-3 col-12"></span>
       </div>
     </div>
     <div class="row mb-3">
       <div class="col-12 col-md-4">
-      <span class="placeholder bg-secondary py-3 col-12"></span>
+        <span class="placeholder bg-secondary py-3 col-12"></span>
       </div>
       <div class="col-12 col-md-4">
-      <span class="placeholder bg-secondary py-3 col-12"></span>
+        <span class="placeholder bg-secondary py-3 col-12"></span>
       </div>
       <div class="col-12 col-md-4">
-      <span class="placeholder bg-secondary py-3 col-12"></span>
+        <span class="placeholder bg-secondary py-3 col-12"></span>
       </div>
     </div>
     <div class="row mb-3">
       <div class="col-12 col-md-6">
-      <span class="placeholder bg-secondary py-3 col-12"></span>
+        <span class="placeholder bg-secondary py-3 col-12"></span>
       </div>
       <div class="col-12 col-md-6">
-      <span class="placeholder bg-secondary py-3 col-12"></span>
+        <span class="placeholder bg-secondary py-3 col-12"></span>
       </div>
-    </div>    
+    </div>
   </div>
   `;
 
@@ -46,7 +47,7 @@ async function mostrarMenu() {
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="exampleModalToggleLabel2">Administración</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close btn-close-n" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <form id="formAdmin">
           <div class="modal-body">
@@ -66,11 +67,11 @@ async function mostrarMenu() {
     </div>
   </div>
   <div class="modal fade" id="adminModalCfgs" aria-hidden="true" tabindex="-1">
-    <div class="modal-dialog modal-fullscreen">
+    <div class="modal-dialog modal-fullscreen modal-custom-top">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="exampleModalToggleLabel2">Administración</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close btn-close-n" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <form id="formAdminCfgs">
@@ -135,20 +136,18 @@ async function mostrarMenu() {
 
   //Nav
   document.querySelector('header').innerHTML += `
-  <div class="fixed-top" style="padding: 0.75rem 0.5rem; background-color: var(--bg-obsidian);">
+  <div class="fixed-top" style="padding: 0 0.5rem; background-color: var(--bg-obsidian);">
     <div class="d-flex align-items-center gap-2">
       <button class="navbar-toggler custom-toggler" type="button" data-bs-toggle="offcanvas"
         data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions" aria-label="Abrir menú">
         <i class="bi bi-grid-fill fs-1"></i>
       </button>
 
-      <div class="btn position-relative" style="border: none; padding: 0; margin: 0; background-color: transparent;">
-        <img class="logo" src="imgs/logo.png" alt="Logo" style="height: 40px; width: auto;">
-        <span id="msgCargando1" class="position-absolute top-0 start-100 translate-middle badge rounded-pill"
-          style="background-color: var(--bg-titulo);">
-          <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-          <span role="status">Cargando...</span>
-        </span>
+      <div class="position-relative">
+        <div id="msgC1" class="contenedor-logo">
+          <img class="logo" src="imgs/logo.png" alt="Logo" style="height: 40px; width: auto;">
+        </div>        
+        <span id="msgC2" style="color: var(--bg-titulo); visibility: hidden; font-weight: bold;">Espere...</span>
       </div>
 
       <a href="#" data-bs-toggle="modal" data-bs-target="#adminModal" class="ms-auto">
@@ -161,39 +160,29 @@ async function mostrarMenu() {
     aria-labelledby="offcanvasWithBothOptionsLabel">
     <div class="offcanvas-header">
       <h1 class="h4 offcanvas-title" id="offcanvasWithBothOptionsLabel">COBACH JMMT</h1>
-      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      <button type="button" class="btn-close btn-close-n" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body">
       <ul class="navbar-nav">
         <li class="nav-item">
-          <a class="nav-link" href="index.html" id="nav-inicio">Inicio</a>
+          <a class="nav-link h6" href="index.html" id="nav-inicio">Inicio</a>
         </li>
         <li class="nav-item">
           <h2 class="h5" style="color: var(--bg-titulo);">Acts. 200s</h2>
-        </li>
-        <li>
-          <a class="nav-link" href="200_Act10.html">Act. Contaminación digital</a>
-        </li>
+          <a class="nav-link h6" href="200_Act10.html">Act. Contaminación digital</a>
+        </li>        
         <li class="nav-item">
           <h2 class="h5" style="color: var(--bg-titulo);">Exámenes</h2>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="Examen400.html">400s</a>
-        </li>
+          <a class="nav-link h6" href="Examen400.html">400s</a>
+        </li>        
       </ul>
     </div>
   </div>
   `;
 
   document.querySelector('footer').innerHTML = `
-  <div id="msgCargando"
-  class="text-center py-3 position-fixed bottom-0 fw-bold"
-  style="z-index: 1092; display: none; background-color: var(--bg-titulo); padding-left: 10px; padding-right: 10px;">
-    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-    <span role="status">Cargando...</span>
-  </div>  
   <div id="msgError"
-  class="text-center py-3 position-fixed bottom-0 w-100 fw-bold"
+  class="text-center py-2 position-fixed bottom-0 w-100"
   style="display: none; background-color: var(--bg-titulo);">
     Hola
   </div>
@@ -217,9 +206,7 @@ async function mostrarMenu() {
   finally { msgCargando(false); }
 }
 
-// ==========================================
 // CONTROLADORES DE EVENTOS DEL DOM
-// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
   mostrarMenu();
 
@@ -283,33 +270,33 @@ document.addEventListener('DOMContentLoaded', () => {
       await guardarUrlSemestres();
       adminModalCfgs.hide();
       msgCargando(false);
-      msgAlerta("Configuraciones guardadas exitosamente");
+      msgAlerta("Configuraciones guardadas");
     });
   }
 });
 
-// ==========================================
 // FUNCIONES DE UTILIDAD Y COMPLEMENTOS
-// ==========================================
 function msgAlerta(message, delay = 3000) {
   let contenedor = document.getElementById('alerta-container');
   if (!contenedor) {
     contenedor = document.createElement('div');
     contenedor.id = 'alerta-container';
-    contenedor.className = 'position-fixed top-0 end-0 p-3 fw-bold';
+    contenedor.className = 'position-fixed top-0 end-0 p-3';
     contenedor.style.zIndex = '1100';
-    contenedor.style.marginTop = '45px';
+    contenedor.style.marginTop = '30px';
     contenedor.style.marginRight = '-12px';
     document.body.appendChild(contenedor);
   }
 
   const wrapper = document.createElement('div');
-  wrapper.innerHTML = [
-    `<div class="alert border-0 text-white alert-dismissible fade show" style="background-color: var(--bg-titulo);" role="alert">`,
-    `   <div>${message}</div>`,
-    '   <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>',
-    '</div>'
-  ].join('');
+  wrapper.innerHTML = `
+  <div class="alert alert-dismissible fade show d-inline-flex align-items-center py-1 pe-2 small"
+    style="background-color: var(--bg-titulo);" role="alert">
+    <div class="me-3">${message}</div>
+    <button type="button" class="btn-close" style="position: relative !important; margin-left: auto; padding: 0.5rem;"
+      data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  `;
 
   contenedor.appendChild(wrapper);
   const alertaBootstrap = new bootstrap.Alert(wrapper.querySelector('.alert'));
@@ -329,32 +316,30 @@ function msgError(mensaje) {
 // Variable global para llevar el conteo de procesos asíncronos en el COBACH
 let peticionesActivas = 0;
 function msgCargando(b) {
-  const loader = document.getElementById('msgCargando');
-  const loader1 = document.getElementById('msgCargando1');
+  const loaderNode1 = document.getElementById('msgC1');
+  const loaderNode2 = document.getElementById('msgC2');
 
   // Verificamos que el contenedor exista para evitar errores si en alguna página no lo pusiste
-  if (!loader) return;
+  if (!loaderNode1) return;
 
   if (b) {
-    peticionesActivas++; // Un proceso (como el examen o el menú) pide encender el letrero (+1)
-    loader.style.display = 'block';
-    loader1.style.visibility = 'visible';
+    peticionesActivas++; // Un proceso (como el examen o el menú) pide encender el letrero (+1)        
+    loaderNode1.classList.add('is-loading');
+    loaderNode2.style.visibility = "visible";
   }
   else {
     peticionesActivas--; // Un proceso avisa que ya terminó su descarga (-1)
 
     // Solo apagamos el letrero naranja si YA NO HAY ningún proceso pendiente
     if (peticionesActivas <= 0) {
-      peticionesActivas = 0; // Lo mantenemos en 0 por seguridad
-      loader.style.display = 'none'; // Ahora sí, ocultamos el letrero de la pantalla
-      loader1.style.visibility = 'hidden';
+      peticionesActivas = 0; // Lo mantenemos en 0 por seguridad        
+      loaderNode1.classList.remove('is-loading');
+      loaderNode2.style.visibility = "hidden";
     }
   }
 }
 
-// ==========================================
 // INTERACCIONES CON LA API (GOOGLE SHEETS)
-// ==========================================
 async function obtenerUrlSem(semestre) {
   try {
     const response = await fetch(CONEXION, { method: 'GET', redirect: 'follow', cache: 'no-store' });
