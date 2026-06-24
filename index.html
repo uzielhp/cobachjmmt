@@ -18,31 +18,48 @@
   <script src="principal.js"></script>
 
   <style>
+    /* ==========================================
+   LAYOUT MASONRY (Multi-column nativo)
+   ========================================== */
     .masonry-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      /* Mantiene las 2 columnas */
-      gap: 0.5rem;
-      /* Espacio uniforme entre fotos */
+      column-count: 2;
+      /* 2 columnas en móviles por defecto */
+      column-gap: 0.5rem;
       padding: 0.5rem;
-      /* Pequeño margen a las orillas */
-      align-items: start;
-      /* Permite que fotos de distintas alturas se acomoden arriba */
     }
 
-    /* Estilo para cada foto individual */
+    /* ==========================================
+   ELEMENTOS Y ANIMACIÓN BASE
+   ========================================== */
     .masonry-item {
+      break-inside: avoid;
+      /* Evita que las fotos se partan entre columnas */
+      margin-bottom: 0.5rem;
+      display: inline-block;
+      width: 100%;
       border-radius: 0.5rem;
-      /* Bordes ligeramente redondeados */
       overflow: hidden;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-      /* Sombra muy sutil */
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      /* Previene el colapso del Observer */
+
+      /* Estado inicial oculto para la animación */
+      opacity: 0;
+      transform: translateY(30px);
+
+      /* Transición acelerada por GPU con curva natural */
+      transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        box-shadow 0.3s ease;
       cursor: pointer;
     }
 
-    /* Efecto al pasar el ratón por encima de la foto */
-    .masonry-item:hover {
+    /* Estado final inyectado por JavaScript */
+    .masonry-item.mostrar {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Efecto hover sobre elementos ya visibles */
+    .masonry-item.mostrar:hover {
       transform: translateY(-5px);
       box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
     }
@@ -51,6 +68,23 @@
       width: 100%;
       height: auto;
       display: block;
+    }
+
+    /* ==========================================
+   RESPONSIVIDAD (Mejora Escalonada)
+   ========================================== */
+    @media (min-width: 768px) {
+      .masonry-grid {
+        column-count: 3;
+        /* 3 columnas en tablets/laptops pequeñas */
+      }
+    }
+
+    @media (min-width: 1200px) {
+      .masonry-grid {
+        column-count: 4;
+        /* 4 columnas en monitores anchos */
+      }
     }
   </style>
 </head>
@@ -83,46 +117,146 @@
   <footer></footer>
 
   <script>
-    // Colección de imágenes
-    const fotos = [
-      "imgs/img1.jpg",
-      "imgs/img2.jpg",
-      "imgs/img3.jpg",
-      "imgs/img4.jpg",
-      "imgs/img5.jpg",
-      "imgs/img6.jpg"
-    ];
+    // ==========================================
+    // CONFIGURACIÓN DE LA GALERÍA
+    // ==========================================
+    const config = {
+      carpeta: 'imgs/galeria/',
+      extensiones: ['jpg', 'jpeg', 'png'],
+      maxFallosPermitidos: 5 // Tolerancia a saltos numéricos (ej. si falta la foto 4)
+    };
 
-    // Tomamos los elementos de la página con los que vamos a interactuar
+    // Referencias al DOM
     const contenedor = document.getElementById('collage-container');
     const imagenEnGrande = document.getElementById('fullImage');
     const modalOpciones = new bootstrap.Modal(document.getElementById('imageModal'));
 
-    // Recorremos nuestra lista de fotos y las agregamos a la página
-    fotos.forEach(rutaUrl => {
-      // Creamos el contenedor de la foto
+    // Estado Global
+    let idFotoActual = 1;
+    let finDeDirectorio = false;
+    let contadorFallos = 0;
+    let cargando = false;
+
+    // ==========================================
+    // 1. CÁLCULO DINÁMICO DEL VIEWPORT
+    // ==========================================
+    function calcularLoteOptimo() {
+      const alturaPantalla = window.innerHeight;
+      const alturaEstimadaFoto = 200;
+      const columnasActivas = window.innerWidth >= 1200 ? 4 : (window.innerWidth >= 768 ? 3 : 2);
+
+      // Calcula cuántas fotos se necesitan para llenar la pantalla y generar scroll
+      const filasQueCaben = Math.ceil(alturaPantalla / alturaEstimadaFoto);
+      const loteBase = filasQueCaben * columnasActivas;
+
+      return loteBase + columnasActivas;
+    }
+
+    // ==========================================
+    // 2. CONFIGURACIÓN DEL OBSERVER (Infinite Scroll)
+    // ==========================================
+    const observadorScroll = new IntersectionObserver((entradas) => {
+      if (entradas[0].isIntersecting && !finDeDirectorio && !cargando) {
+        cargarLoteDeFotos();
+      }
+    }, { rootMargin: '0px 0px 300px 0px' });
+
+    // Inyección del centinela invisible
+    const centinela = document.createElement('div');
+    centinela.style.width = '100%';
+    centinela.style.height = '1px';
+    contenedor.parentNode.insertBefore(centinela, contenedor.nextSibling);
+
+    // ==========================================
+    // 3. CONTROL DE FLUJO Y AUTO-SANACIÓN
+    // ==========================================
+    function cargarLoteDeFotos() {
+      cargando = true;
+      const fotosACargar = calcularLoteOptimo();
+
+      for (let i = 0; i < fotosACargar; i++) {
+        if (finDeDirectorio) break;
+        procesarImagen(idFotoActual++);
+      }
+
+      // Failsafe: Evita la Trampa del Observador
+      setTimeout(() => {
+        cargando = false;
+        const centinelaVisible = centinela.getBoundingClientRect().top < window.innerHeight;
+
+        if (centinelaVisible && !finDeDirectorio) {
+          cargarLoteDeFotos();
+        }
+      }, 350);
+    }
+
+    // ==========================================
+    // 4. PROCESAMIENTO, ANIMACIÓN Y FALLBACKS
+    // ==========================================
+    function procesarImagen(id) {
       const elemento = document.createElement('div');
       elemento.className = 'masonry-item';
+      elemento.tabIndex = 0; // A11y
+      elemento.setAttribute('role', 'button');
 
-      // Creamos la imagen
       const img = document.createElement('img');
-      img.src = rutaUrl;
-      img.alt = "Foto de la galería";
+      img.alt = `Fotografía número ${id}`;
+      img.loading = "lazy";
 
-      // Juntamos todo y lo mostramos
+      let indiceExt = 0;
+
+      // Lógica de Fallback de extensiones
+      const intentarSiguienteExtension = () => {
+        if (indiceExt < config.extensiones.length) {
+          img.src = `${config.carpeta}${id}.${config.extensiones[indiceExt]}`;
+          indiceExt++;
+        } else {
+          elemento.remove();
+          contadorFallos++;
+
+          if (contadorFallos >= config.maxFallosPermitidos) {
+            finDeDirectorio = true;
+          } else if (!finDeDirectorio) {
+            procesarImagen(idFotoActual++);
+          }
+        }
+      };
+
+      img.addEventListener('error', intentarSiguienteExtension);
+
+      img.addEventListener('load', () => {
+        contadorFallos = 0; // Reset de errores
+
+        // ANIMACIÓN: Aparece suavemente solo cuando ya está lista
+        requestAnimationFrame(() => {
+          elemento.classList.add('mostrar');
+        });
+
+        // Lógica del Modal
+        const abrirModal = () => {
+          imagenEnGrande.src = img.src;
+          modalOpciones.show();
+        };
+
+        elemento.addEventListener('click', abrirModal);
+        elemento.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            abrirModal();
+          }
+        });
+      });
+
+      intentarSiguienteExtension();
       elemento.appendChild(img);
       contenedor.appendChild(elemento);
+    }
 
-      // Le decimos qué hacer cuando alguien le dé clic a la foto
-      elemento.addEventListener('click', () => {
-        // Pedimos una versión de mayor calidad cambiando los parámetros de la URL
-        const rutaAltaCalidad = rutaUrl.replace('w=600', 'w=1600').replace('h=800', 'h=1200').replace('h=400', 'h=800').replace('h=900', 'h=1400');
-
-        // Ponemos la foto en el modal y lo abrimos
-        imagenEnGrande.src = rutaAltaCalidad;
-        modalOpciones.show();
-      });
-    });
+    // ==========================================
+    // ARRANQUE (Bootstrap de la aplicación)
+    // ==========================================
+    cargarLoteDeFotos();
+    observadorScroll.observe(centinela);
   </script>
 </body>
 

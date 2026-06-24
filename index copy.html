@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COBACH JMMT</title>
+  <link rel="icon" type="image/png" href="imgs/favicon.png" />
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
+  <link rel="stylesheet" href="principal.css">
+  <script src="principal.js"></script>
+
+  <style>
+    .masonry-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      /* Mantiene las 2 columnas */
+      gap: 0.5rem;
+      /* Espacio uniforme entre fotos */
+      padding: 0.5rem;
+      /* Pequeño margen a las orillas */
+      align-items: start;
+      /* Permite que fotos de distintas alturas se acomoden arriba */
+    }
+
+    /* Estilo para cada foto individual */
+    .masonry-item {
+      border-radius: 0.5rem;
+      /* Bordes ligeramente redondeados */
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      /* Sombra muy sutil */
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+
+    /* Efecto al pasar el ratón por encima de la foto */
+    .masonry-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .masonry-item img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app-cargando"></div>
+
+  <div id="app-content" style="padding-top: 50px;">
+    <header></header>
+    <main>
+      <!-- Aquí se inyectarán las fotos del collage -->
+      <div class="masonry-grid" id="collage-container"></div>
+
+      <!-- Pantalla completa (Modal de Bootstrap) para ver la foto -->
+      <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="btn-close btn-close-n" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <img id="fullImage" src="" alt="Fotografía en pantalla completa">
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <footer></footer>
+
+  <script>
+    // Colección de imágenes
+    const fotos = [
+      "imgs/img1.jpg",
+      "imgs/img2.jpg",
+      "imgs/img3.jpg",
+      "imgs/img4.jpg",
+      "imgs/img5.jpg",
+      "imgs/img6.jpg"
+    ];
+
+    // Tomamos los elementos de la página con los que vamos a interactuar
+    const contenedor = document.getElementById('collage-container');
+    const imagenEnGrande = document.getElementById('fullImage');
+    const modalOpciones = new bootstrap.Modal(document.getElementById('imageModal'));
+
+    // Recorremos nuestra lista de fotos y las agregamos a la página
+    fotos.forEach(rutaUrl => {
+      // Creamos el contenedor de la foto
+      const elemento = document.createElement('div');
+      elemento.className = 'masonry-item';
+
+      // Creamos la imagen
+      const img = document.createElement('img');
+      img.src = rutaUrl;
+      img.alt = "Foto de la galería";
+
+      // Juntamos todo y lo mostramos
+      elemento.appendChild(img);
+      contenedor.appendChild(elemento);
+
+      // Le decimos qué hacer cuando alguien le dé clic a la foto
+      elemento.addEventListener('click', () => {
+        // Pedimos una versión de mayor calidad cambiando los parámetros de la URL
+        const rutaAltaCalidad = rutaUrl.replace('w=600', 'w=1600').replace('h=800', 'h=1200').replace('h=400', 'h=800').replace('h=900', 'h=1400');
+
+        // Ponemos la foto en el modal y lo abrimos
+        imagenEnGrande.src = rutaAltaCalidad;
+        modalOpciones.show();
+      });
+    });
+  </script>
+</body>
+
+</html>
