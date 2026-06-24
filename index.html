@@ -147,38 +147,43 @@
     }
 
     // ==========================================
-    // 2. OBSERVADOR: LAZY LOAD REAL Y ANIMACIÓN
+    // 2. OBSERVADOR: LAZY LOAD Y AUTO-COMPENSACIÓN
     // ==========================================
-    // Este observador SÓLO vigila lo visual. Se activa cuando haces scroll.
     const observadorVisual = new IntersectionObserver((entradas, observador) => {
       entradas.forEach(entrada => {
         if (entrada.isIntersecting) {
           const elemento = entrada.target;
           const img = elemento.querySelector('img');
 
-          // Si la imagen tiene data-src, es hora de descargarla
           if (img.dataset.src) {
-            img.src = img.dataset.src; // Inicia la descarga en red
-            img.removeAttribute('data-src'); // Limpiamos el atributo
+            img.src = img.dataset.src;
+            img.removeAttribute('data-src');
 
-            // Cuando el navegador termine de descargar los píxeles reales...
             img.onload = () => {
-              // 1. Quitamos la altura forzada para que se adapte y no deje HUECOS NEGROS
+              // 1. Quitamos la altura forzada
               elemento.classList.remove('esqueleto');
-              // 2. Disparamos la animación suave de CSS
+              // 2. Disparamos la animación
               requestAnimationFrame(() => elemento.classList.add('mostrar'));
+
+              // 3. NUEVO FAILSAFE (Prevención de colapso en móviles):
+              // Si al quitar el esqueleto, la galería se hizo corta y el centinela
+              // volvió a aparecer en pantalla, forzamos la carga de más fotos.
+              setTimeout(() => {
+                if (!cargando && !finDeDirectorio) {
+                  const centinelaVisible = centinela.getBoundingClientRect().top < window.innerHeight + 200;
+                  if (centinelaVisible) cargarLoteDeFotos();
+                }
+              }, 50); // Pequeño delay para dejar que el navegador repinte el DOM
             };
 
-            // Failsafe: Si por alguna razón la red falla tras intentar cargarla
             img.onerror = () => elemento.remove();
           }
 
-          // Dejamos de vigilar el nodo para ahorrar rendimiento de CPU
           observador.unobserve(elemento);
         }
       });
     }, {
-      rootMargin: '0px 0px 150px 0px' // Empieza la descarga 150px antes de que asome en pantalla
+      rootMargin: '0px 0px 200px 0px'
     });
 
     // ==========================================
@@ -188,11 +193,10 @@
       for (let ext of config.extensiones) {
         const ruta = `${config.carpeta}${id}.${ext}`;
         try {
-          // Petición HEAD: Solo pide metadatos al servidor, no descarga la imagen real
           const respuesta = await fetch(ruta, { method: 'HEAD' });
           if (respuesta.ok) return { exito: true, ruta: ruta };
         } catch (error) {
-          // Falla silenciosamente si hay error de red
+          // Ignoramos errores de red
         }
       }
       return { exito: false, ruta: null };
@@ -203,21 +207,18 @@
     // ==========================================
     function inyectarPlaceholder(ruta, id) {
       const elemento = document.createElement('div');
-      // Agregamos 'esqueleto' temporalmente para que tenga altura en la pantalla
       elemento.className = 'masonry-item esqueleto';
       elemento.tabIndex = 0;
       elemento.setAttribute('role', 'button');
 
       const img = document.createElement('img');
       img.alt = `Fotografía número ${id}`;
-      // CRÍTICO: Usamos data-src. El navegador ignorará esta imagen por ahora.
       img.dataset.src = ruta;
 
       elemento.appendChild(img);
       columnasDOM[indiceColumnaActual].appendChild(elemento);
       indiceColumnaActual = (indiceColumnaActual + 1) % columnasDOM.length;
 
-      // Mandamos el elemento invisible al observador para que espere tu scroll
       observadorVisual.observe(elemento);
 
       const abrirModal = () => {
@@ -243,7 +244,8 @@
 
       const alturaPantalla = window.innerHeight;
       const filasQueCaben = Math.ceil(alturaPantalla / 200);
-      const fotosACargar = (filasQueCaben * columnasDOM.length) + columnasDOM.length;
+      // Aseguramos un mínimo de carga para móviles para empujar bien el contenido
+      const fotosACargar = Math.max((filasQueCaben * columnasDOM.length) + columnasDOM.length, 6);
 
       let fotosInyectadas = 0;
 
@@ -266,8 +268,8 @@
 
       cargando = false;
 
-      // Seguimos validando si hace falta rellenar más la pantalla inicial
-      if (!finDeDirectorio && centinela.getBoundingClientRect().top < window.innerHeight) {
+      // Verificación post-inyección
+      if (!finDeDirectorio && centinela.getBoundingClientRect().top < window.innerHeight + 200) {
         cargarLoteDeFotos();
       }
     }
@@ -279,7 +281,11 @@
       if (entradas[0].isIntersecting) {
         cargarLoteDeFotos();
       }
-    }, { rootMargin: '0px 0px 500px 0px' });
+    }, {
+      // Reducimos el margen a 200px (antes 500px). 
+      // En móviles, 500px es casi media pantalla, lo que causaba que el observador se quedara "atascado".
+      rootMargin: '0px 0px 200px 0px'
+    });
 
     const centinela = document.createElement('div');
     centinela.style.width = '100%';
