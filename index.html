@@ -19,46 +19,50 @@
 
   <style>
     /* ==========================================
-   LAYOUT MASONRY (Multi-column nativo)
+   NUEVO LAYOUT: FLEXBOX COLUMNS
    ========================================== */
     .masonry-grid {
-      column-count: 2;
-      /* 2 columnas en móviles por defecto */
-      column-gap: 0.5rem;
+      display: flex;
+      /* Cambiamos a Flexbox */
+      gap: 0.5rem;
+      /* Espacio entre columnas */
       padding: 0.5rem;
+      align-items: flex-start;
+      /* Permite que cada columna tenga su propia altura */
+    }
+
+    /* Nodos contenedores inyectados por JS */
+    .masonry-column {
+      flex: 1;
+      /* Todas las columnas miden igual */
+      display: flex;
+      flex-direction: column;
+      /* Apila las fotos hacia abajo */
+      gap: 0.5rem;
+      /* Espacio vertical entre fotos */
     }
 
     /* ==========================================
-   ELEMENTOS Y ANIMACIÓN BASE
+   ELEMENTOS (Ajustado para el nuevo layout)
    ========================================== */
     .masonry-item {
-      break-inside: avoid;
-      /* Evita que las fotos se partan entre columnas */
-      margin-bottom: 0.5rem;
-      display: inline-block;
       width: 100%;
       border-radius: 0.5rem;
       overflow: hidden;
-      /* Previene el colapso del Observer */
 
-      /* Estado inicial oculto para la animación */
       opacity: 0;
       transform: translateY(30px);
-
-      /* Transición acelerada por GPU con curva natural */
       transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
         transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
         box-shadow 0.3s ease;
       cursor: pointer;
     }
 
-    /* Estado final inyectado por JavaScript */
     .masonry-item.mostrar {
       opacity: 1;
       transform: translateY(0);
     }
 
-    /* Efecto hover sobre elementos ya visibles */
     .masonry-item.mostrar:hover {
       transform: translateY(-5px);
       box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
@@ -70,21 +74,9 @@
       display: block;
     }
 
-    /* ==========================================
-   RESPONSIVIDAD (Mejora Escalonada)
-   ========================================== */
-    @media (min-width: 768px) {
-      .masonry-grid {
-        column-count: 3;
-        /* 3 columnas en tablets/laptops pequeñas */
-      }
-    }
-
-    @media (min-width: 1200px) {
-      .masonry-grid {
-        column-count: 4;
-        /* 4 columnas en monitores anchos */
-      }
+    /* Soporte temporal para mantener el scroll mientras la foto no se haya descargado */
+    .masonry-item.esqueleto {
+      min-height: 200px;
     }
   </style>
 </head>
@@ -122,139 +114,180 @@
     // ==========================================
     const config = {
       carpeta: 'imgs/galeria/',
-      extensiones: ['jpg', 'jpeg', 'png'],
-      maxFallosPermitidos: 5 // Tolerancia a saltos numéricos (ej. si falta la foto 4)
+      extensiones: ['jpg', 'jpeg', 'png', 'JPG', 'JPEG', 'PNG', 'webp'],
+      maxFallosPermitidos: 10
     };
 
-    // Referencias al DOM
     const contenedor = document.getElementById('collage-container');
     const imagenEnGrande = document.getElementById('fullImage');
     const modalOpciones = new bootstrap.Modal(document.getElementById('imageModal'));
 
-    // Estado Global
     let idFotoActual = 1;
     let finDeDirectorio = false;
     let contadorFallos = 0;
     let cargando = false;
 
-    // ==========================================
-    // 1. CÁLCULO DINÁMICO DEL VIEWPORT
-    // ==========================================
-    function calcularLoteOptimo() {
-      const alturaPantalla = window.innerHeight;
-      const alturaEstimadaFoto = 200;
-      const columnasActivas = window.innerWidth >= 1200 ? 4 : (window.innerWidth >= 768 ? 3 : 2);
+    let columnasDOM = [];
+    let indiceColumnaActual = 0;
 
-      // Calcula cuántas fotos se necesitan para llenar la pantalla y generar scroll
-      const filasQueCaben = Math.ceil(alturaPantalla / alturaEstimadaFoto);
-      const loteBase = filasQueCaben * columnasActivas;
+    // ==========================================
+    // 1. INICIALIZACIÓN DE COLUMNAS 
+    // ==========================================
+    function prepararColumnas() {
+      contenedor.innerHTML = '';
+      columnasDOM = [];
+      const numColumnas = window.innerWidth >= 1200 ? 4 : (window.innerWidth >= 768 ? 3 : 2);
 
-      return loteBase + columnasActivas;
+      for (let i = 0; i < numColumnas; i++) {
+        const col = document.createElement('div');
+        col.className = 'masonry-column';
+        contenedor.appendChild(col);
+        columnasDOM.push(col);
+      }
     }
 
     // ==========================================
-    // 2. CONFIGURACIÓN DEL OBSERVER (Infinite Scroll)
+    // 2. OBSERVADOR: LAZY LOAD REAL Y ANIMACIÓN
     // ==========================================
-    const observadorScroll = new IntersectionObserver((entradas) => {
-      if (entradas[0].isIntersecting && !finDeDirectorio && !cargando) {
+    // Este observador SÓLO vigila lo visual. Se activa cuando haces scroll.
+    const observadorVisual = new IntersectionObserver((entradas, observador) => {
+      entradas.forEach(entrada => {
+        if (entrada.isIntersecting) {
+          const elemento = entrada.target;
+          const img = elemento.querySelector('img');
+
+          // Si la imagen tiene data-src, es hora de descargarla
+          if (img.dataset.src) {
+            img.src = img.dataset.src; // Inicia la descarga en red
+            img.removeAttribute('data-src'); // Limpiamos el atributo
+
+            // Cuando el navegador termine de descargar los píxeles reales...
+            img.onload = () => {
+              // 1. Quitamos la altura forzada para que se adapte y no deje HUECOS NEGROS
+              elemento.classList.remove('esqueleto');
+              // 2. Disparamos la animación suave de CSS
+              requestAnimationFrame(() => elemento.classList.add('mostrar'));
+            };
+
+            // Failsafe: Si por alguna razón la red falla tras intentar cargarla
+            img.onerror = () => elemento.remove();
+          }
+
+          // Dejamos de vigilar el nodo para ahorrar rendimiento de CPU
+          observador.unobserve(elemento);
+        }
+      });
+    }, {
+      rootMargin: '0px 0px 150px 0px' // Empieza la descarga 150px antes de que asome en pantalla
+    });
+
+    // ==========================================
+    // 3. VALIDACIÓN DE EXISTENCIA (Cero Descargas)
+    // ==========================================
+    async function verificarExistencia(id) {
+      for (let ext of config.extensiones) {
+        const ruta = `${config.carpeta}${id}.${ext}`;
+        try {
+          // Petición HEAD: Solo pide metadatos al servidor, no descarga la imagen real
+          const respuesta = await fetch(ruta, { method: 'HEAD' });
+          if (respuesta.ok) return { exito: true, ruta: ruta };
+        } catch (error) {
+          // Falla silenciosamente si hay error de red
+        }
+      }
+      return { exito: false, ruta: null };
+    }
+
+    // ==========================================
+    // 4. INYECCIÓN DEL "HUECO" AL DOM
+    // ==========================================
+    function inyectarPlaceholder(ruta, id) {
+      const elemento = document.createElement('div');
+      // Agregamos 'esqueleto' temporalmente para que tenga altura en la pantalla
+      elemento.className = 'masonry-item esqueleto';
+      elemento.tabIndex = 0;
+      elemento.setAttribute('role', 'button');
+
+      const img = document.createElement('img');
+      img.alt = `Fotografía número ${id}`;
+      // CRÍTICO: Usamos data-src. El navegador ignorará esta imagen por ahora.
+      img.dataset.src = ruta;
+
+      elemento.appendChild(img);
+      columnasDOM[indiceColumnaActual].appendChild(elemento);
+      indiceColumnaActual = (indiceColumnaActual + 1) % columnasDOM.length;
+
+      // Mandamos el elemento invisible al observador para que espere tu scroll
+      observadorVisual.observe(elemento);
+
+      const abrirModal = () => {
+        imagenEnGrande.src = ruta;
+        modalOpciones.show();
+      };
+
+      elemento.addEventListener('click', abrirModal);
+      elemento.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          abrirModal();
+        }
+      });
+    }
+
+    // ==========================================
+    // 5. CONTROLADOR PRINCIPAL Y DATOS
+    // ==========================================
+    async function cargarLoteDeFotos() {
+      if (cargando || finDeDirectorio) return;
+      cargando = true;
+
+      const alturaPantalla = window.innerHeight;
+      const filasQueCaben = Math.ceil(alturaPantalla / 200);
+      const fotosACargar = (filasQueCaben * columnasDOM.length) + columnasDOM.length;
+
+      let fotosInyectadas = 0;
+
+      while (fotosInyectadas < fotosACargar && !finDeDirectorio) {
+        const resultado = await verificarExistencia(idFotoActual);
+
+        if (resultado.exito) {
+          contadorFallos = 0;
+          inyectarPlaceholder(resultado.ruta, idFotoActual);
+          fotosInyectadas++;
+        } else {
+          contadorFallos++;
+          if (contadorFallos >= config.maxFallosPermitidos) {
+            finDeDirectorio = true;
+          }
+        }
+
+        idFotoActual++;
+      }
+
+      cargando = false;
+
+      // Seguimos validando si hace falta rellenar más la pantalla inicial
+      if (!finDeDirectorio && centinela.getBoundingClientRect().top < window.innerHeight) {
         cargarLoteDeFotos();
       }
-    }, { rootMargin: '0px 0px 300px 0px' });
+    }
 
-    // Inyección del centinela invisible
+    // ==========================================
+    // 6. OBSERVADOR DEL INFINITE SCROLL
+    // ==========================================
+    const observadorScroll = new IntersectionObserver((entradas) => {
+      if (entradas[0].isIntersecting) {
+        cargarLoteDeFotos();
+      }
+    }, { rootMargin: '0px 0px 500px 0px' });
+
     const centinela = document.createElement('div');
     centinela.style.width = '100%';
     centinela.style.height = '1px';
     contenedor.parentNode.insertBefore(centinela, contenedor.nextSibling);
 
-    // ==========================================
-    // 3. CONTROL DE FLUJO Y AUTO-SANACIÓN
-    // ==========================================
-    function cargarLoteDeFotos() {
-      cargando = true;
-      const fotosACargar = calcularLoteOptimo();
-
-      for (let i = 0; i < fotosACargar; i++) {
-        if (finDeDirectorio) break;
-        procesarImagen(idFotoActual++);
-      }
-
-      // Failsafe: Evita la Trampa del Observador
-      setTimeout(() => {
-        cargando = false;
-        const centinelaVisible = centinela.getBoundingClientRect().top < window.innerHeight;
-
-        if (centinelaVisible && !finDeDirectorio) {
-          cargarLoteDeFotos();
-        }
-      }, 350);
-    }
-
-    // ==========================================
-    // 4. PROCESAMIENTO, ANIMACIÓN Y FALLBACKS
-    // ==========================================
-    function procesarImagen(id) {
-      const elemento = document.createElement('div');
-      elemento.className = 'masonry-item';
-      elemento.tabIndex = 0; // A11y
-      elemento.setAttribute('role', 'button');
-
-      const img = document.createElement('img');
-      img.alt = `Fotografía número ${id}`;
-      img.loading = "lazy";
-
-      let indiceExt = 0;
-
-      // Lógica de Fallback de extensiones
-      const intentarSiguienteExtension = () => {
-        if (indiceExt < config.extensiones.length) {
-          img.src = `${config.carpeta}${id}.${config.extensiones[indiceExt]}`;
-          indiceExt++;
-        } else {
-          elemento.remove();
-          contadorFallos++;
-
-          if (contadorFallos >= config.maxFallosPermitidos) {
-            finDeDirectorio = true;
-          } else if (!finDeDirectorio) {
-            procesarImagen(idFotoActual++);
-          }
-        }
-      };
-
-      img.addEventListener('error', intentarSiguienteExtension);
-
-      img.addEventListener('load', () => {
-        contadorFallos = 0; // Reset de errores
-
-        // ANIMACIÓN: Aparece suavemente solo cuando ya está lista
-        requestAnimationFrame(() => {
-          elemento.classList.add('mostrar');
-        });
-
-        // Lógica del Modal
-        const abrirModal = () => {
-          imagenEnGrande.src = img.src;
-          modalOpciones.show();
-        };
-
-        elemento.addEventListener('click', abrirModal);
-        elemento.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            abrirModal();
-          }
-        });
-      });
-
-      intentarSiguienteExtension();
-      elemento.appendChild(img);
-      contenedor.appendChild(elemento);
-    }
-
-    // ==========================================
-    // ARRANQUE (Bootstrap de la aplicación)
-    // ==========================================
+    // ARRANQUE
+    prepararColumnas();
     cargarLoteDeFotos();
     observadorScroll.observe(centinela);
   </script>
