@@ -91,6 +91,7 @@ span {
 #app-content {
   display: none;
   /*margin-top: 50px;*/
+  padding-top: 50px;
 }
 
 .glow {

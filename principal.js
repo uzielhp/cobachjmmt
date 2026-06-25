@@ -3,20 +3,22 @@ let mnExamenes = sessionStorage.getItem('mnExamenes') || null;
 
 async function mostrarMenu() {
 
-  document.getElementById('app-cargando').innerHTML = `
+  document.getElementById('app-cargando').innerHTML = `  
   <div aria-hidden="true" class="placeholder-glow d-flex flex-column bg-dark min-vh-100 m-0 p-0">
 
     <div class="navbar" style="height: 50px;">
       <div class="container-fluid d-flex justify-content-between align-items-center">
-        <div class="d-flex align-items-center gap-2 col-4 col-md-2">
-          <span class="placeholder col-3 py-3 bg-secondary bg-opacity-70 rounded-circle"></span>
-          <span class="placeholder col-8 py-3 bg-secondary bg-opacity-50 rounded"></span>
+        <div class="d-flex align-items-center gap-3 col-4 col-md-2">        
+          <span class="placeholder col-3 py-3 bg-secondary bg-opacity-70 rounded-circle"
+            style="width: 40px; height: 40px;"></span>
+          <span class="contenedor-logo is-loading placeholder col-8 py-3 rounded" 
+            style="width: 65px; height: 40px; background: rgba(var(--bs-secondary-rgb), 0.5) !important;">
+          </span>
         </div>
 
-        <div class="d-flex align-items-center justify-content-end gap-3 col-4 col-md-2">
-          <span class="placeholder col-3 py-2 bg-secondary bg-opacity-25 rounded"></span>
+        <div class="d-flex align-items-center justify-content-end gap-3 col-4 col-md-2">          
           <span class="placeholder p-3 bg-secondary bg-opacity-70 rounded-circle"
-            style="width: 32px; height: 32px;"></span>
+            style="width: 40px; height: 40px;"></span>
         </div>
       </div>
     </div>
@@ -101,7 +103,7 @@ async function mostrarMenu() {
           <div
             class="w-100 placeholder bg-secondary bg-opacity-25 rounded d-flex flex-column p-3 justify-content-between">
             <div class="row w-100 m-0 gap-2">
-              <span class="placeholder col-7 py-2 bg-secondary bg-opacity-50 rounded"></span>
+              <span class="placeholder col-7 py-2 bg-secois-loadingndary bg-opacity-50 rounded"></span>
               <span class="placeholder col-9 py-2 bg-secondary bg-opacity-50 rounded"></span>
               <span class="placeholder col-6 py-2 bg-secondary bg-opacity-50 rounded"></span>
             </div>
@@ -265,7 +267,7 @@ async function mostrarMenu() {
   `;
 
   try {
-    msgCargando(true);
+    //msgCargando(true);
     if (mnExamenes === null) {
       mnExamenes = String(await obtenerUrlSem('Menu')).toLowerCase();
       sessionStorage.setItem('mnExamenes', mnExamenes);
@@ -287,7 +289,7 @@ async function mostrarMenu() {
     }
   }
   catch (e) { msgError("Error al validar el menú (Examenes)", e); }
-  finally { msgCargando(false); }
+  //finally { msgCargando(false); }
 }
 
 // CONTROLADORES DE EVENTOS DEL DOM
@@ -414,7 +416,7 @@ function msgCargando(b) {
   if (!loaderNode1) return;
 
   if (b) {
-    peticionesActivas++; // Un proceso (como el examen o el menú) pide encender el letrero (+1)        
+    peticionesActivas++; // Un proceso (como el examen o el menú) pide encender el letrero (+1)
     loaderNode1.classList.add('is-loading');
     loaderNode2.style.visibility = "visible";
   }

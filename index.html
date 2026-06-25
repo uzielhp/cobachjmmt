@@ -83,7 +83,7 @@
 <body>
   <div id="app-cargando"></div>
 
-  <div id="app-content" style="padding-top: 50px;">
+  <div id="app-content">
     <header></header>
     <main>
       <!-- Aquí se inyectarán las fotos del collage -->
@@ -94,9 +94,7 @@
   <footer></footer>
 
   <script>
-    // ==========================================
     // CONFIGURACIÓN DE LA GALERÍA
-    // ==========================================
     const config = {
       carpeta: 'imgs/galeria/',
       extensiones: ['jpg', 'jpeg', 'png', 'JPG', 'JPEG', 'PNG', 'webp'],
@@ -113,9 +111,7 @@
     let columnasDOM = [];
     let indiceColumnaActual = 0;
 
-    // ==========================================
     // 1. INICIALIZACIÓN DE COLUMNAS 
-    // ==========================================
     function prepararColumnas() {
       contenedor.innerHTML = '';
       columnasDOM = [];
@@ -128,9 +124,7 @@
       }
     }
 
-    // ==========================================
     // 2. OBSERVADOR: LAZY LOAD Y AUTO-COMPENSACIÓN
-    // ==========================================
     const observadorVisual = new IntersectionObserver((entradas, observador) => {
       entradas.forEach(entrada => {
         if (entrada.isIntersecting) {
@@ -168,9 +162,7 @@
       rootMargin: '0px 0px 200px 0px'
     });
 
-    // ==========================================
     // 3. VALIDACIÓN DE EXISTENCIA (Cero Descargas)
-    // ==========================================
     async function verificarExistencia(id) {
       for (let ext of config.extensiones) {
         const ruta = `${config.carpeta}${id}.${ext}`;
@@ -184,13 +176,10 @@
       return { exito: false, ruta: null };
     }
 
-    // ==========================================
     // 4. INYECCIÓN DEL "HUECO" AL DOM
-    // ==========================================
     function inyectarPlaceholder(ruta, id) {
       const elemento = document.createElement('div');
       elemento.className = 'masonry-item esqueleto';
-      // ELIMINADOS: tabIndex y role="button"
 
       const img = document.createElement('img');
       img.alt = `Fotografía número ${id}`;
@@ -201,12 +190,9 @@
       indiceColumnaActual = (indiceColumnaActual + 1) % columnasDOM.length;
 
       observadorVisual.observe(elemento);
-
-      // ELIMINADOS: La función abrirModal y los eventos click/keydown
     }
-    // ==========================================
+
     // 5. CONTROLADOR PRINCIPAL Y DATOS
-    // ==========================================
     async function cargarLoteDeFotos() {
       if (cargando || finDeDirectorio) return;
       cargando = true;
@@ -243,9 +229,7 @@
       }
     }
 
-    // ==========================================
     // 6. OBSERVADOR DEL INFINITE SCROLL
-    // ==========================================
     const observadorScroll = new IntersectionObserver((entradas) => {
       if (entradas[0].isIntersecting) {
         cargarLoteDeFotos();
