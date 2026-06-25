@@ -55,7 +55,6 @@
       transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
         transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
         box-shadow 0.3s ease;
-      cursor: pointer;
     }
 
     .masonry-item.mostrar {
@@ -89,20 +88,6 @@
     <main>
       <!-- Aquí se inyectarán las fotos del collage -->
       <div class="masonry-grid" id="collage-container"></div>
-
-      <!-- Pantalla completa (Modal de Bootstrap) para ver la foto -->
-      <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-fullscreen">
-          <div class="modal-content">
-            <div class="modal-header">
-              <button type="button" class="btn-close btn-close-n" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <img id="fullImage" src="" alt="Fotografía en pantalla completa">
-            </div>
-          </div>
-        </div>
-      </div>
     </main>
   </div>
 
@@ -119,8 +104,6 @@
     };
 
     const contenedor = document.getElementById('collage-container');
-    const imagenEnGrande = document.getElementById('fullImage');
-    const modalOpciones = new bootstrap.Modal(document.getElementById('imageModal'));
 
     let idFotoActual = 1;
     let finDeDirectorio = false;
@@ -207,8 +190,7 @@
     function inyectarPlaceholder(ruta, id) {
       const elemento = document.createElement('div');
       elemento.className = 'masonry-item esqueleto';
-      elemento.tabIndex = 0;
-      elemento.setAttribute('role', 'button');
+      // ELIMINADOS: tabIndex y role="button"
 
       const img = document.createElement('img');
       img.alt = `Fotografía número ${id}`;
@@ -220,20 +202,8 @@
 
       observadorVisual.observe(elemento);
 
-      const abrirModal = () => {
-        imagenEnGrande.src = ruta;
-        modalOpciones.show();
-      };
-
-      elemento.addEventListener('click', abrirModal);
-      elemento.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          abrirModal();
-        }
-      });
+      // ELIMINADOS: La función abrirModal y los eventos click/keydown
     }
-
     // ==========================================
     // 5. CONTROLADOR PRINCIPAL Y DATOS
     // ==========================================
