@@ -136,8 +136,7 @@
     function prepararColumnas() {
       contenedor.innerHTML = '';
       columnasDOM = [];
-      const numColumnas = window.innerWidth >= 1200 ? 4 : (window.innerWidth >= 768 ? 3 : 2);
-
+      const numColumnas = window.innerWidth >= 768 ? 3 : 2;
       for (let i = 0; i < numColumnas; i++) {
         const col = document.createElement('div');
         col.className = 'masonry-column';
