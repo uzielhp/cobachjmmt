@@ -97,9 +97,10 @@
     // CONFIGURACIÓN DE LA GALERÍA
     const config = {
       carpeta: 'imgs/galeria/',
-      // Minimizadas para evitar sobrecarga de red. Agrega más si el servidor es Case-Sensitive.
       extensiones: ['jpg', 'jpeg', 'png', 'webp', 'JPG'],
-      maxGruposVacios: 3 // Cantidad de grupos (ej. 3.x, 4.x, 5.x) que pueden fallar seguidos antes de detener el scroll
+      maxGruposVacios: 3,
+      loteInicial: 12, // Primera carga
+      loteSubsecuente: 6 // Cargas por scroll
     };
 
     const contenedor = document.getElementById('collage-container');
@@ -128,53 +129,42 @@
     }
 
     // 2. OBSERVADOR: LAZY LOAD Y AUTO-COMPENSACIÓN
-    const observadorVisual = new IntersectionObserver((entradas, observador) => {
+    const observadorVisual = new IntersectionObserver((entradas) => {
       entradas.forEach(entrada => {
         if (entrada.isIntersecting) {
           const elemento = entrada.target;
           const img = elemento.querySelector('img');
 
-          if (img.dataset.src) {
+          if (img && img.dataset.src) {
             img.src = img.dataset.src;
             img.removeAttribute('data-src');
 
             img.onload = () => {
               elemento.classList.remove('esqueleto');
               requestAnimationFrame(() => elemento.classList.add('mostrar'));
-
-              setTimeout(() => {
-                if (!cargando && !finDeDirectorio) {
-                  const centinelaVisible = centinela.getBoundingClientRect().top < window.innerHeight + 200;
-                  if (centinelaVisible) cargarLoteDeFotos();
-                }
-              }, 50);
             };
 
             img.onerror = () => elemento.remove();
           }
-
-          observador.unobserve(elemento);
+          observadorVisual.unobserve(elemento);
         }
       });
-    }, { rootMargin: '0px 0px 200px 0px' });
+    }, { rootMargin: '0px 0px 300px 0px' }); // Incrementado para suavizar transiciones
 
-    // 3. VALIDACIÓN CONCURRENTE (Optimización de red)
+    // 3. VALIDACIÓN CONCURRENTE
     async function verificarExistencia(id) {
-      // Disparamos peticiones HEAD para todas las extensiones al mismo tiempo
       const peticiones = config.extensiones.map(ext => {
         const ruta = `${config.carpeta}${id}.${ext}`;
         return fetch(ruta, { method: 'HEAD' }).then(respuesta => {
           if (respuesta.ok) return ruta;
-          throw new Error('Archivo no encontrado');
+          throw new Error('404');
         });
       });
 
       try {
-        // Promise.any resuelve con la primera petición exitosa (la extensión correcta)
         const rutaValida = await Promise.any(peticiones);
         return { exito: true, ruta: rutaValida };
-      } catch (error) {
-        // Todas las promesas fallaron (ninguna extensión existe)
+      } catch {
         return { exito: false, ruta: null };
       }
     }
@@ -185,76 +175,70 @@
       elemento.className = 'masonry-item esqueleto';
 
       const img = document.createElement('img');
-      img.alt = `Fotografía ${id}`; // Ejemplo: Fotografía 1.2
+      img.alt = `Fotografía ${id}`;
       img.dataset.src = ruta;
 
       elemento.appendChild(img);
       columnasDOM[indiceColumnaActual].appendChild(elemento);
+
+      // Balanceo de columnas secuencial
       indiceColumnaActual = (indiceColumnaActual + 1) % columnasDOM.length;
 
       observadorVisual.observe(elemento);
     }
 
-    // 5. CONTROLADOR DE LÓGICA DE CARGA (Nomenclatura X.Y)
-    async function cargarLoteDeFotos() {
+    // 5. CONTROLADOR DE LÓGICA DE CARGA (Nomenclatura X.Y con tamaño de lote fijo)
+    async function cargarLoteDeFotos(tamanoLote) {
       if (cargando || finDeDirectorio) return;
       cargando = true;
 
-      const alturaPantalla = window.innerHeight;
-      const filasQueCaben = Math.ceil(alturaPantalla / 200);
-      const fotosACargar = Math.max((filasQueCaben * columnasDOM.length) + columnasDOM.length, 6);
-
       let fotosInyectadas = 0;
 
-      while (fotosInyectadas < fotosACargar && !finDeDirectorio) {
-        // Formateamos el ID dinámico ej: "1.1", "1.2", "2.1"
+      while (fotosInyectadas < tamanoLote && !finDeDirectorio) {
         const idFormateado = `${grupoActual}.${subItemActual}`;
         const resultado = await verificarExistencia(idFormateado);
 
         if (resultado.exito) {
-          // Encontramos la imagen. Reseteamos fallos de grupo y preparamos la siguiente foto.
           contadorGruposVacios = 0;
           inyectarPlaceholder(resultado.ruta, idFormateado);
           fotosInyectadas++;
-          subItemActual++; // Probamos la siguiente del mismo grupo (ej. de 1.1 pasamos a 1.2)
+          subItemActual++;
         } else {
-          // No se encontró la imagen.
           if (subItemActual === 1) {
-            // Si falló en la .1, significa que el grupo entero no existe.
             contadorGruposVacios++;
             if (contadorGruposVacios >= config.maxGruposVacios) {
-              finDeDirectorio = true; // Demasiados grupos vacíos, detenemos el infinite scroll
+              finDeDirectorio = true;
             }
           }
-          // Sin importar si fue la .1 o la .5, al fallar avanzamos al siguiente grupo
           grupoActual++;
-          subItemActual = 1; // Reiniciamos el subítem a 1 para el nuevo grupo
+          subItemActual = 1;
         }
       }
 
       cargando = false;
-
-      if (!finDeDirectorio && centinela.getBoundingClientRect().top < window.innerHeight + 200) {
-        cargarLoteDeFotos();
-      }
     }
 
     // 6. OBSERVADOR DEL INFINITE SCROLL
-    const observadorScroll = new IntersectionObserver((entradas) => {
-      if (entradas[0].isIntersecting) {
-        cargarLoteDeFotos();
-      }
-    }, { rootMargin: '0px 0px 200px 0px' });
-
     const centinela = document.createElement('div');
-    centinela.style.width = '100%';
+    centinela.className = 'w-100'; // Utiliza clase Bootstrap útil
     centinela.style.height = '1px';
     contenedor.parentNode.insertBefore(centinela, contenedor.nextSibling);
 
-    // ARRANQUE
-    prepararColumnas();
-    cargarLoteDeFotos();
-    observadorScroll.observe(centinela);
+    const observadorScroll = new IntersectionObserver((entradas) => {
+      // Solo dispara si el centinela intersecta Y la carga inicial ya finalizó
+      if (entradas[0].isIntersecting && !cargando && !finDeDirectorio) {
+        cargarLoteDeFotos(config.loteSubsecuente);
+      }
+    }, { rootMargin: '0px 0px 400px 0px' }); // Margen proactivo para precargar antes de llegar al fondo
+
+    // ORQUESTRACIÓN DE ARRANQUE (IIFE Asíncrona)
+    (async () => {
+      prepararColumnas();
+      // Forzamos la carga exacta de las primeras 12
+      await cargarLoteDeFotos(config.loteInicial);
+      // Una vez renderizadas las 12 iniciales, activamos el scroll infinito
+      observadorScroll.observe(centinela);
+    })();
   </script>
 </body>
 
