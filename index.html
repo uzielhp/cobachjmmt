@@ -187,7 +187,7 @@
       observadorVisual.observe(elemento);
     }
 
-    // 5. CONTROLADOR DE LÓGICA DE CARGA (Nomenclatura X.Y con tamaño de lote fijo)
+    // 5. CONTROLADOR DE LÓGICA DE CARGA (Corregido y optimizado para flujo X.Y)
     async function cargarLoteDeFotos(tamanoLote) {
       if (cargando || finDeDirectorio) return;
       cargando = true;
@@ -199,19 +199,29 @@
         const resultado = await verificarExistencia(idFormateado);
 
         if (resultado.exito) {
+          // Encontró la foto (Ej: 1.1)
           contadorGruposVacios = 0;
           inyectarPlaceholder(resultado.ruta, idFormateado);
           fotosInyectadas++;
-          subItemActual++;
+          subItemActual++; // Avanza al siguiente subítem (Ej: 1.2)
         } else {
+          // No encontró la foto (Ej: 1.4 no existe)
           if (subItemActual === 1) {
+            // Si falló en el .1, el grupo entero está vacío
             contadorGruposVacios++;
             if (contadorGruposVacios >= config.maxGruposVacios) {
               finDeDirectorio = true;
+              break; // Rompe el bucle de inmediato si ya no hay más carpetas
             }
+            // Si falló el .1 pero no hemos llegado al límite, saltamos al siguiente grupo
+            grupoActual++;
+          } else {
+            // Si falló en el .4, significa que terminaron las fotos del grupo actual (grupo 1).
+            // Saltamos al siguiente grupo (grupo 2) y empezamos estricta y limpiamente desde el .1
+            grupoActual++;
+            subItemActual = 1;
+            contadorGruposVacios = 0; // Reseteamos porque este grupo sí tuvo fotos
           }
-          grupoActual++;
-          subItemActual = 1;
         }
       }
 
