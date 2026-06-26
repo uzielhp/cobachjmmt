@@ -62,11 +62,6 @@
       transform: translateY(0);
     }
 
-    .masonry-item.mostrar:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
-    }
-
     .masonry-item img {
       width: 100%;
       height: auto;
@@ -96,159 +91,164 @@
   <script>
     // CONFIGURACIÓN DE LA GALERÍA
     const config = {
-      carpeta: 'imgs/galeria/',
-      extensiones: ['jpg'],
-      maxGruposVacios: 3,
-      loteInicial: 12, // Primera carga
-      loteSubsecuente: 6 // Cargas por scroll
+      jsonUrl: 'galeria.json',
+      loteInicial: 12,      // Primera carga
+      loteSubsecuente: 6    // Cargas por scroll
+    };
+
+    // ESTADO DE LA APLICACIÓN (Encapsulado)
+    const appState = {
+      imagenes: [],
+      indiceActual: 0,
+      cargando: false,
+      columnasDOM: [],
+      indiceColumnaActual: 0
     };
 
     const contenedor = document.getElementById('collage-container');
 
-    // Controladores de nomenclatura X.Y
-    let grupoActual = 1;
-    let subItemActual = 1;
-    let finDeDirectorio = false;
-    let contadorGruposVacios = 0;
-    let cargando = false;
-
-    let columnasDOM = [];
-    let indiceColumnaActual = 0;
-
-    // 1. INICIALIZACIÓN DE COLUMNAS 
+    // 1. INICIALIZACIÓN Y BALANCEO DE COLUMNAS
     function prepararColumnas() {
       contenedor.innerHTML = '';
-      columnasDOM = [];
+      appState.columnasDOM = [];
+
+      // Responsive break: 3 columnas en MD (Bootstrap >= 768px), 2 en móviles
       const numColumnas = window.innerWidth >= 768 ? 3 : 2;
+
+      const fragmento = document.createDocumentFragment();
       for (let i = 0; i < numColumnas; i++) {
         const col = document.createElement('div');
         col.className = 'masonry-column';
-        contenedor.appendChild(col);
-        columnasDOM.push(col);
+        fragmento.appendChild(col);
+        appState.columnasDOM.push(col);
       }
+      contenedor.appendChild(fragmento);
     }
 
-    // 2. OBSERVADOR: LAZY LOAD Y AUTO-COMPENSACIÓN
+    // 2. ORDENAMIENTO NATURAL (Evita que 1.10 vaya antes que 1.2)
+    function ordenarRutasNatural(rutas) {
+      const colator = new Intl.Collator('es', { numeric: true, sensitivity: 'base' });
+      return rutas.sort((a, b) => colator.compare(a, b));
+    }
+
+    // 3. OBSERVADOR ACCESIBLE Y PERFORMANCE (Lazy Load)
     const observadorVisual = new IntersectionObserver((entradas) => {
       entradas.forEach(entrada => {
         if (entrada.isIntersecting) {
           const elemento = entrada.target;
           const img = elemento.querySelector('img');
 
-          if (img && img.dataset.src) {
+          if (img?.dataset.src) {
             img.src = img.dataset.src;
             img.removeAttribute('data-src');
 
             img.onload = () => {
               elemento.classList.remove('esqueleto');
+              // requestAnimationFrame evita bloqueos en el hilo principal de renderizado
               requestAnimationFrame(() => elemento.classList.add('mostrar'));
             };
 
-            img.onerror = () => elemento.remove();
+            img.onerror = () => {
+              elemento.remove();
+              balancearAlturas(); // Opcional: Reajuste defensivo si falla una imagen
+            };
           }
           observadorVisual.unobserve(elemento);
         }
       });
-    }, { rootMargin: '0px 0px 300px 0px' }); // Incrementado para suavizar transiciones
+    }, { rootMargin: '0px 0px 300px 0px' });
 
-    // 3. VALIDACIÓN CONCURRENTE
-    async function verificarExistencia(id) {
-      const peticiones = config.extensiones.map(ext => {
-        const ruta = `${config.carpeta}${id}.${ext}`;
-        return fetch(ruta, { method: 'HEAD' }).then(respuesta => {
-          if (respuesta.ok) return ruta;
-          throw new Error('404');
-        });
-      });
-
-      try {
-        const rutaValida = await Promise.any(peticiones);
-        return { exito: true, ruta: rutaValida };
-      } catch {
-        return { exito: false, ruta: null };
-      }
-    }
-
-    // 4. INYECCIÓN AL DOM
-    function inyectarPlaceholder(ruta, id) {
+    // 4. INYECCIÓN CONTROLADA AL DOM
+    function inyectarPlaceholder(ruta) {
       const elemento = document.createElement('div');
       elemento.className = 'masonry-item esqueleto';
 
+      // Extracción limpia del nombre del archivo para accesibilidad (SEO / Screen Readers)
+      const nombreArchivo = ruta.split('/').pop().replace('.jpg', '');
+
       const img = document.createElement('img');
-      img.alt = `Fotografía ${id}`;
+      img.alt = `Fotografía escolar ${nombreArchivo}`;
       img.dataset.src = ruta;
 
       elemento.appendChild(img);
-      columnasDOM[indiceColumnaActual].appendChild(elemento);
 
-      // Balanceo de columnas secuencial
-      indiceColumnaActual = (indiceColumnaActual + 1) % columnasDOM.length;
+      // Inyección equilibrada en la columna correspondiente
+      appState.columnasDOM[appState.indiceColumnaActual].appendChild(elemento);
+      appState.indiceColumnaActual = (appState.indiceColumnaActual + 1) % appState.columnasDOM.length;
 
       observadorVisual.observe(elemento);
     }
 
-    // 5. CONTROLADOR DE LÓGICA DE CARGA (Corregido y optimizado para flujo X.Y)
-    async function cargarLoteDeFotos(tamanoLote) {
-      if (cargando || finDeDirectorio) return;
-      cargando = true;
+    // 5. CONTROLADOR DE FLUJO MEJORADO (Retorna una promesa con las imágenes del lote)
+    function cargarLoteDeFotos(tamanoLote) {
+      if (appState.cargando || appState.indiceActual >= appState.imagenes.length) return Promise.resolve();
+      appState.cargando = true;
 
-      let fotosInyectadas = 0;
+      const limite = Math.min(appState.indiceActual + tamanoLote, appState.imagenes.length);
+      const promesasImagenes = [];
 
-      while (fotosInyectadas < tamanoLote && !finDeDirectorio) {
-        const idFormateado = `${grupoActual}.${subItemActual}`;
-        const resultado = await verificarExistencia(idFormateado);
+      for (let i = appState.indiceActual; i < limite; i++) {
+        const ruta = appState.imagenes[i];
 
-        if (resultado.exito) {
-          // Encontró la foto (Ej: 1.1)
-          contadorGruposVacios = 0;
-          inyectarPlaceholder(resultado.ruta, idFormateado);
-          fotosInyectadas++;
-          subItemActual++; // Avanza al siguiente subítem (Ej: 1.2)
-        } else {
-          // No encontró la foto (Ej: 1.4 no existe)
-          if (subItemActual === 1) {
-            // Si falló en el .1, el grupo entero está vacío
-            contadorGruposVacios++;
-            if (contadorGruposVacios >= config.maxGruposVacios) {
-              finDeDirectorio = true;
-              break; // Rompe el bucle de inmediato si ya no hay más carpetas
-            }
-            // Si falló el .1 pero no hemos llegado al límite, saltamos al siguiente grupo
-            grupoActual++;
-          } else {
-            // Si falló en el .4, significa que terminaron las fotos del grupo actual (grupo 1).
-            // Saltamos al siguiente grupo (grupo 2) y empezamos estricta y limpiamente desde el .1
-            grupoActual++;
-            subItemActual = 1;
-            contadorGruposVacios = 0; // Reseteamos porque este grupo sí tuvo fotos
-          }
-        }
+        // Creamos el placeholder en el DOM
+        inyectarPlaceholder(ruta);
+
+        // Precarga defensiva en memoria para asegurar que el usuario no vea saltos de layout
+        const promesaPreload = new Promise((resolve) => {
+          const imgPreload = new Image();
+          imgPreload.src = ruta;
+          imgPreload.onload = () => resolve();
+          imgPreload.onerror = () => resolve(); // No bloquea la UI si una imagen falla (404)
+        });
+
+        promesasImagenes.push(promesaPreload);
       }
 
-      cargando = false;
+      appState.indiceActual = limite;
+      appState.cargando = false;
+
+      // Devuelve una promesa única que se resuelve cuando todo el lote está descargado en caché
+      return Promise.all(promesasImagenes);
     }
 
-    // 6. OBSERVADOR DEL INFINITE SCROLL
+    // 6. CONFIGURACIÓN DEL CENTINELA (Scroll Infinito)
     const centinela = document.createElement('div');
-    centinela.className = 'w-100'; // Utiliza clase Bootstrap útil
+    centinela.className = 'w-100';
     centinela.style.height = '1px';
     contenedor.parentNode.insertBefore(centinela, contenedor.nextSibling);
 
     const observadorScroll = new IntersectionObserver((entradas) => {
-      // Solo dispara si el centinela intersecta Y la carga inicial ya finalizó
-      if (entradas[0].isIntersecting && !cargando && !finDeDirectorio) {
-        cargarLoteDeFotos(config.loteSubsecuente);
+      if (entradas[0].isIntersecting && !appState.cargando && appState.indiceActual < appState.imagenes.length) {
+        cargarLoteDeFotos(config.loteSubsecuente); // Las cargas subsecuentes no necesitan await global
       }
-    }, { rootMargin: '0px 0px 400px 0px' }); // Margen proactivo para precargar antes de llegar al fondo
+    }, { rootMargin: '0px 0px 400px 0px' });
 
-    // ORQUESTRACIÓN DE ARRANQUE (IIFE Asíncrona)
-    (async () => {
-      prepararColumnas();
-      // Forzamos la carga exacta de las primeras 12
-      await cargarLoteDeFotos(config.loteInicial);
-      // Una vez renderizadas las 12 iniciales, activamos el scroll infinito
-      observadorScroll.observe(centinela);
-    })();
+
+    // ORQUESTRACIÓN ASÍNCRONA DE ARRANQUE (Sin interferir con principal.js)
+    async function inicializarGaleria() {
+      try {
+        prepararColumnas();
+
+        // 1. Descarga del manifiesto JSON
+        const respuesta = await fetch(config.jsonUrl);
+        if (!respuesta.ok) throw new Error(`Error HTTP: ${respuesta.status}`);
+
+        const datosRaw = await respuesta.json();
+        appState.imagenes = ordenarRutasNatural(datosRaw);
+
+        // 2. Carga del lote inicial (Aparecerán con el efecto fade-in "mostrar" individual)
+        cargarLoteDeFotos(config.loteInicial);
+
+        // 3. Activamos el Infinite Scroll para el resto del scroll
+        observadorScroll.observe(centinela);
+
+      } catch (e) {
+        msgError("Error al inicializar galería", e);
+      }
+    }
+
+    // Inicialización segura tras el DOM
+    document.addEventListener('DOMContentLoaded', inicializarGaleria);
   </script>
 </body>
 

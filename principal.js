@@ -267,7 +267,7 @@ async function mostrarMenu() {
   `;
 
   try {
-    //msgCargando(true);
+    msgCargando(true);
     if (mnExamenes === null) {
       mnExamenes = String(await obtenerUrlSem('Menu')).toLowerCase();
       sessionStorage.setItem('mnExamenes', mnExamenes);
@@ -280,8 +280,13 @@ async function mostrarMenu() {
       mnExamenes1.style.visibility = 'hidden';
     }
 
-    document.getElementById('app-cargando').style.display = 'none';
-    document.getElementById('app-content').style.display = 'block';
+    const loaderGlobal = document.getElementById('app-cargando');
+    const contenidoGlobal = document.getElementById('app-content');
+
+    if (loaderGlobal && contenidoGlobal) {
+      loaderGlobal.style.display = 'none';   // Oculta el loading completamente
+      contenidoGlobal.style.display = 'block'; // Muestra toda la app ya procesada
+    }
 
     if (window.location.pathname.split('/').pop() == "Examen400.html" && mnExamenes === "false") {
       window.location.href = "index.html";
@@ -289,7 +294,7 @@ async function mostrarMenu() {
     }
   }
   catch (e) { msgError("Error al validar el menú (Examenes)", e); }
-  //finally { msgCargando(false); }
+  finally { msgCargando(false); }
 }
 
 // CONTROLADORES DE EVENTOS DEL DOM
