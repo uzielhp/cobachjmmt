@@ -195,3 +195,46 @@ span {
     transform: rotate(360deg);
   }
 }
+
+/* GALERÍA DE INDEX */
+.masonry-grid {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  align-items: flex-start;
+}
+
+.masonry-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.masonry-item {
+  width: 100%;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.masonry-item.mostrar {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.masonry-item img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Esqueleto placeholder adaptativo */
+.masonry-item.esqueleto {
+  min-height: 250px;
+  background-color: rgba(var(--bs-secondary-rgb), 0.15);
+  position: relative;
+}
