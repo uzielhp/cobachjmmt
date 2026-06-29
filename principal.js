@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
   } catch (e) {
-    msgError("Error al procesar configuraciones del menú", e);
+    msgError("Error al procesar configuraciones del menú");
   } finally {
     msgCargando(false);
 
@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
         }
       }
-      catch (e) { msgError("Error al validar contraseña", e); }
+      catch (e) { msgError("Error al validar contraseña"); }
       finally { msgCargando(false); }
     });
   }
@@ -252,7 +252,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         sessionStorage.removeItem('mnExamenes');
         msgAlerta("Configuraciones guardadas");
       }
-      catch (e) { msgError("Error al guardar configuraciones ADM", e); }
+      catch (e) { msgError("Error al guardar configuraciones ADM"); }
       finally { msgCargando(false); }
     });
   }
@@ -335,7 +335,7 @@ async function obtenerUrlSem(semestre) {
     }
     return null;
   } catch (e) {
-    msgError("Error al conectarse con Hoja ADM", e);
+    msgError("Error al conectarse con Hoja ADM");
     return null;
   }
 }
@@ -358,7 +358,7 @@ async function obtenerUrlSemestres() {
     }
   }
   catch (e) {
-    msgError("Error al conectarse Hoja ADM", e);
+    msgError("Error al conectarse Hoja ADM");
     return null;
   }
 }
@@ -391,7 +391,7 @@ async function guardarUrlSemestres() {
     }
   }
   catch (e) {
-    msgError("Error al conectarse con Hoja ADM", e);
+    msgError("Error al conectarse con Hoja ADM");
     return false;
   }
 }

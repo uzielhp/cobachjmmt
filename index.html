@@ -247,12 +247,9 @@
           }
         }, 350);
 
-      } catch (e) {
-        if (typeof msgError === 'function') {
-          msgError("Error al inicializar galería", e);
-        } else {
-          console.error("Error al inicializar galería:", e);
-        }
+      } 
+      catch (e) {
+        msgError("Error al inicializar galería");
       }
     }
 

@@ -144,8 +144,8 @@
         URL400s = await obtenerUrlSem('400');
         if (!URL400s) { msgError("Error al conectarse Hoja ADM"); return; }
 
-        const response = await fetch(URL400s);
-        if (!response) { msgError("Error al conectarse Hoja Semestre"); return; }
+        const response = await fetch(URL400s, { method: 'GET', cache: 'no-store' });
+        if (!response.ok) { msgError("Error al conectarse Hoja Semestre"); return; }
 
         const data = await response.json();
         let htmlContent = '';
@@ -203,7 +203,7 @@
         }
       }
       catch (e) {
-        msgError("Error al cargar las preguntas", e);
+        msgError("Error al cargar las preguntas");
       }
       finally { msgCargando(false); }
     }
@@ -282,7 +282,7 @@
 
       }
       catch (e) {
-        msgError('Error al guardar las preguntas', e);
+        msgError('Error al guardar las preguntas');
       }
       finally {
         submitBtn.classList.remove('d-none');
