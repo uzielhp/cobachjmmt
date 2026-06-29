@@ -145,6 +145,8 @@
         if (!URL400s) { msgError("Error al conectarse Hoja ADM"); return; }
 
         const response = await fetch(URL400s);
+        if (!response) { msgError("Error al conectarse Hoja Semestre"); return; }
+
         const data = await response.json();
         let htmlContent = '';
         let numPregunta = 0;
@@ -201,7 +203,7 @@
         }
       }
       catch (e) {
-        msgError("Error al cargar las preguntas " + e.message, e);
+        msgError("Error al cargar las preguntas", e);
       }
       finally { msgCargando(false); }
     }
