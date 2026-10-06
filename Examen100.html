@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COBACH JMMT</title>
+  <link rel="icon" type="image/png" href="imgs/favicon.png" />
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
+  <link rel="stylesheet" href="principal.css">
+  <script src="principal.js"></script>
+</head>
+
+<body>
+  <h-cargando></h-cargando>
+  <h-menu></h-menu>
+
+  <main>
+    <div class="container">
+      <div class="text-center mb-4">
+        <h1>Examen</h1>
+        <p>
+          Por favor, completa tus datos y responde las preguntas.
+        </p>
+      </div>
+
+      <form id="studentForm" class="card-body pb-2 md-4" novalidate>
+        <!-- Datos del Alumno -->
+        <div class="container mb-3 border rounded p-3">
+          <div class="row row-cols-1">
+            <div class="col">
+              <h5 class="pb-2" style="color: var(--bg-titulo);">
+                <i class="bi bi-mortarboard-fill"></i> Datos del Alumno
+              </h5>
+            </div>
+            <div class="col">
+              <div class="row g-3">
+                <div class="col-12">
+                  <label for="grupo" class="form-label fw-bold">Grupo / Turno *</label>
+                  <select id="grupo" name="grupo" required class="form-select">
+                    <option value="" disabled selected>Selecciona tu grupo...</option>
+                    <option value="401M">401M</option>
+                    <option value="402M">402M</option>
+                    <option value="401V">401V</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label for="nombres" class="form-label fw-bold">Nombre(s) *</label>
+                  <input type="text" id="nombres" name="nombres" required placeholder="Ej. María Fernanda"
+                    class="form-control">
+                </div>
+                <div class="col-md-6">
+                  <label for="apellidos" class="form-label fw-bold">Apellidos *</label>
+                  <input type="text" id="apellidos" name="apellidos" required placeholder="Ej. Pérez Gómez"
+                    class="form-control">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Datos de Preguntas -->
+        <div class="container mb-3 border rounded p-3">
+          <div class="row row-cols-1">
+            <div class="col">
+              <h5 class="pb-2" style="color: var(--bg-titulo);">
+                <i class="bi bi-patch-question-fill"></i> Preguntas
+              </h5>
+            </div>
+            <div class="col">
+              <div id="preguntasContainer"></div>
+            </div>
+          </div>
+        </div>
+        <button type="submit" id="submitBtn" class="btn btn-primary w-100 fw-bold shadow-sm py-3 mt-3 d-none">
+          Enviar mis respuestas <i class="fas fa-paper-plane ms-2"></i>
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <footer></footer>
+
+  <script>
+    // VARIABLES DE CONTROL Y ESTADO GLOBAL
+    let modalsaliste = null;
+    let respuestasCorrectas = {};
+    let examenTerminado = true;
+    let URL400s = "";
+    let vecesSalio = sessionStorage.getItem('vecesSalio') || "0";
+
+    // Modifica visualmente el botón de envío si hay registros de salida
+    function actualizarVecesSalio() {
+      const numSalidas = parseInt(vecesSalio, 10);
+      if (numSalidas > 0) {
+        const btn = document.getElementById('submitBtn');
+        if (btn) {
+          btn.innerHTML = `Enviar (Te saliste ${numSalidas} ${numSalidas === 1 ? 'vez' : 'veces'}) <i class="bi bi-send ms-2"></i>`;
+        }
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // Inicialización perezosa del modal después de que principal.js inyectó el footer
+      const modalElement = document.getElementById('modalSaliste');
+      if (modalElement) {
+        modalsaliste = new bootstrap.Modal(modalElement);
+
+        // Listener nativo del ciclo de vida de Bootstrap
+        modalElement.addEventListener('shown.bs.modal', () => {
+          let currentCount = parseInt(sessionStorage.getItem('vecesSalio') || "0", 10);
+          currentCount++;
+          vecesSalio = currentCount.toString();
+          sessionStorage.setItem('vecesSalio', vecesSalio);
+          actualizarVecesSalio();
+        });
+      }
+
+      // Ejecución de rutinas de carga inicial
+      actualizarVecesSalio();
+      cargarPreguntas();
+    });
+
+    // LÓGICA DEL EXAMEN
+    function revolverArreglo(arreglo) {
+      for (let i = arreglo.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arreglo[i], arreglo[j]] = [arreglo[j], arreglo[i]];
+      }
+      return arreglo;
+    }
+
+    async function cargarPreguntas() {
+      msgCargando(true);
+
+      try {
+        URL400s = await obtenerUrlSem('100');
+        if (!URL400s) { msgError("Error al conectarse Hoja ADM"); return; }
+
+        const response = await fetch(URL400s, { method: 'GET', cache: 'no-store' });
+        if (!response.ok) { msgError("Error al conectarse Hoja Semestre"); return; }
+
+        const data = await response.json();
+        let htmlContent = '';
+        let numPregunta = 0;
+
+        const inicio = (data.length > 0 && data[0][0].toString().toLowerCase().includes('pregunta')) ? 1 : 0;
+
+        for (let i = inicio; i < data.length; i++) {
+          const fila = data[i];
+          if (!fila[0]) continue;
+
+          numPregunta++;
+          const textoPregunta = fila[0];
+
+          if (fila[1]) {
+            respuestasCorrectas['pregunta' + numPregunta] = fila[1].toString().trim().toLowerCase();
+          }
+
+          htmlContent += `<div class="mb-4"><p class="fw-bold mb-2">${numPregunta}. ${textoPregunta} *</p>`;
+
+          let opcionesTemporales = [];
+          for (let j = 2; j < fila.length; j++) {
+            if (fila[j]) opcionesTemporales.push(fila[j]);
+          }
+
+          opcionesTemporales = revolverArreglo(opcionesTemporales);
+
+          let numOpcion = 0;
+          for (let k = 0; k < opcionesTemporales.length; k++) {
+            const textoOpcion = opcionesTemporales[k];
+            numOpcion++;
+            const idOpcion = `p${numPregunta}_o${numOpcion}`;
+            const valorSeguro = textoOpcion.toString().replace(/"/g, '&quot;');
+
+            htmlContent += `
+                <div class="border rounded-3 p-3 mb-2">
+                  <div class="form-check m-0">
+                    <input class="form-check-input" type="radio" name="pregunta${numPregunta}" id="${idOpcion}" value="${valorSeguro}" required>
+                    <label class="form-check-label w-100" style="cursor: pointer;" for="${idOpcion}">${textoOpcion}</label>
+                  </div>
+                </div>
+              `;
+          }
+          htmlContent += `</div>`;
+        }
+
+        const container = document.getElementById('preguntasContainer');
+        if (htmlContent) {
+          container.innerHTML = htmlContent;
+          document.getElementById('submitBtn').classList.remove('d-none');
+          examenTerminado = false;
+        }
+        else {
+          msgError("Error al cargar las preguntas (No hay ninguna)");
+        }
+      }
+      catch (e) {
+        msgError("Error al cargar las preguntas");
+      }
+      finally { msgCargando(false); }
+    }
+
+    // SEGURIDAD ANTI-TRAMPAS (LISTENERS)   
+    document.addEventListener('visibilitychange', () => {
+      if (examenTerminado) return;
+      if (document.hidden) { modalsaliste.show(); }
+    });
+
+    window.addEventListener('blur', () => {
+      if (examenTerminado) return;
+      modalsaliste.show();
+    });
+
+    document.addEventListener('contextmenu', e => {
+      if (!examenTerminado) {
+        e.preventDefault();
+        msgAlerta('Acción no permitida');
+      }
+    });
+
+    // ENVÍO Y PROCESAMIENTO DE RESPUESTAS
+    const form = document.getElementById('studentForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+
+      if (!form.checkValidity()) {
+        e.stopPropagation();
+        form.classList.add('was-validated'); // Enciende los bordes rojos en los campos vacíos
+
+        // Extra: Hace scroll automático hacia el primer campo que el alumno dejó vacío
+        const primerError = form.querySelector(':invalid');
+        if (primerError) {
+          primerError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+      }
+
+      msgCargando(true);
+      try {
+        // Ocultamos el botón para evitar dobles envíos accidentales
+        submitBtn.classList.add('d-none');
+        msgError("Guardando y calificando...");
+
+        const formData = new FormData(form);
+        let aciertos = 0;
+
+        // Calificación automática de respuestas
+        for (const [preguntaKey, respuestaCorrecta] of Object.entries(respuestasCorrectas)) {
+          const respuestaAlumno = formData.get(preguntaKey);
+          if (respuestaAlumno && respuestaAlumno.toString().trim().toLowerCase() === respuestaCorrecta) {
+            aciertos++;
+            formData.append('eval_' + preguntaKey, 'correcta');
+          } else {
+            formData.append('eval_' + preguntaKey, 'incorrecta');
+          }
+        }
+
+        formData.append('vecesSalio', vecesSalio);
+        formData.append('totalCorrectas', aciertos);
+
+
+        // Con el await, JavaScript espera de verdad a que Google Sheets responda
+        await fetch(URL400s, { method: 'POST', body: formData, mode: 'no-cors' });
+
+        examenTerminado = true;
+        msgError("¡Tus respuestas se han guardado! Examen finalizado");
+        sessionStorage.removeItem('vecesSalio');
+
+        // Deshabilitamos controles para que no los vuelvan a cambiar
+        const inputs = form.querySelectorAll('input, select, button');
+        inputs.forEach(input => input.disabled = true);
+
+      }
+      catch (e) {
+        msgError('Error al guardar las preguntas');
+      }
+      finally {
+        submitBtn.classList.remove('d-none');
+        msgCargando(false);
+      }
+    });
+  </script>
+</body>
+
+</html>
