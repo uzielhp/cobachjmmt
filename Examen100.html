@@ -46,9 +46,9 @@
                   <label for="grupo" class="form-label fw-bold">Grupo / Turno *</label>
                   <select id="grupo" name="grupo" required class="form-select">
                     <option value="" disabled selected>Selecciona tu grupo...</option>
-                    <option value="401M">101V</option>
-                    <option value="402M">101M</option>
-                    <option value="401V">102M</option>
+                    <option value="401M">401M</option>
+                    <option value="402M">402M</option>
+                    <option value="401V">401V</option>
                   </select>
                 </div>
                 <div class="col-md-6">
@@ -74,6 +74,9 @@
                 <i class="bi bi-patch-question-fill"></i> Preguntas
               </h5>
             </div>
+            <div class="col-12">
+              <div id="imagenesContainer" class="w-100 mb-3"></div>
+            </div>
             <div class="col">
               <div id="preguntasContainer"></div>
             </div>
@@ -93,7 +96,7 @@
     let modalsaliste = null;
     let respuestasCorrectas = {};
     let examenTerminado = true;
-    let URL400s = "";
+    let HOJA = "";
     let vecesSalio = sessionStorage.getItem('vecesSalio') || "0";
 
     // Modifica visualmente el botón de envío si hay registros de salida
@@ -141,13 +144,30 @@
       msgCargando(true);
 
       try {
-        URL400s = await obtenerUrlSem('100');
-        if (!URL400s) { msgError("Error al conectarse Hoja ADM"); return; }
+        HOJA = await obtenerUrlSem('100');
+        if (!HOJA) { msgError("Error al conectarse Hoja ADM"); return; }
 
-        const response = await fetch(URL400s, { method: 'GET', cache: 'no-store' });
+        const response = await fetch(HOJA, { method: 'GET', cache: 'no-store' });
         if (!response.ok) { msgError("Error al conectarse Hoja Semestre"); return; }
 
-        const data = await response.json();
+        const paquete = await response.json();
+        const data = paquete.preguntas;
+        
+        // --- PROCESAR IMÁGENES ---
+        let htmlImagenes = '';
+        if (paquete.imagenes && paquete.imagenes.length > 0) {
+          // Detectamos si la primera fila es encabezado (si no empieza con http)
+          const inicioImg = (paquete.imagenes[0][0].toString().toLowerCase().includes('http')) ? 0 : 1;
+          
+          for (let img = inicioImg; img < paquete.imagenes.length; img++) {
+            if(paquete.imagenes[img][0]) { // Si la celda A tiene contenido
+              htmlImagenes += `<img src="${paquete.imagenes[img][0]}" class="img-fluid w-100 rounded shadow-sm mb-3" alt="Imagen del examen">`;
+            }
+          }
+          document.getElementById('imagenesContainer').innerHTML = htmlImagenes;
+        }
+        // --- FIN DE IMÁGENES ---
+
         let htmlContent = '';
         let numPregunta = 0;
 
@@ -270,7 +290,7 @@
 
 
         // Con el await, JavaScript espera de verdad a que Google Sheets responda
-        await fetch(URL400s, { method: 'POST', body: formData, mode: 'no-cors' });
+        await fetch(HOJA, { method: 'POST', body: formData, mode: 'no-cors' });
 
         examenTerminado = true;
         msgError("¡Tus respuestas se han guardado! Examen finalizado");
