@@ -61,8 +61,12 @@ class HMenu extends HTMLElement {
             </li>        
             <li class="nav-item" id="mnExamenes1">
               <h2 class="h6 fw-bold mt-2 mb-1" style="color: var(--bg-titulo);">Exámenes</h2>
-              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen400.html">400s</a>
               <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen100.html">100s</a>
+              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen200.html">200s</a>
+              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen300.html">300s</a><br/>
+              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen400.html">400s</a>         
+              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen500.html">500s</a>
+              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen600.html">600s</a>
             </li>        
           </ul>
         </nav>
