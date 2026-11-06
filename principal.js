@@ -1,7 +1,9 @@
-const CONEXION = 'https://script.google.com/macros/s/AKfycbxFXPyv_Cs7ffiYMhiy5OE7ymTTx_F2TE1jOXHQ7jc2_Xplur8u_qbSACY0adrvpqDi/exec';
-let mnExamenes = sessionStorage.getItem('mnExamenes') || null;
+const CONEXION = 'proxy.php';
+let ExamenesURLS = sessionStorage.getItem('ExamenesURLS') || null;
+//sessionStorage.setItem('ExamenesURLS', ExamenesURLS);
+//sessionStorage.removeItem('ExamenesURLS');
 
-//CONTROLADOR DE VISIBILIDAD OPTIMIZADO
+// CONTROLADOR DE VISIBILIDAD OPTIMIZADO
 function toggleD(comp, show) {
   const loader = document.querySelector(comp);
   if (!loader) return;
@@ -59,7 +61,7 @@ class HMenu extends HTMLElement {
               <h2 class="h6 fw-bold mt-2 mb-1" style="color: var(--bg-titulo);">Acts. 200s</h2>
               <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="200_Act10.html">Act. Contaminación digital</a>
             </li>        
-            <li class="nav-item" id="mnExamenes1">
+            <li class="nav-item" id="mnExamenes">
               <h2 class="h6 fw-bold mt-2 mb-1" style="color: var(--bg-titulo);">Exámenes</h2>
               <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen100.html">100s</a>
               <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen200.html">200s</a>
@@ -166,26 +168,22 @@ async function Modals() {
 
 // CONTROLADORES DE EVENTOS DEL DOM
 document.addEventListener('DOMContentLoaded', async () => {
-  Modals();
-
+  Modals();  
   // Opciones del menú.ini
-  try {
-    if (mnExamenes === null) {
-      msgCargando(true);
-      mnExamenes = String(await obtenerUrlSem('Menu')).toLowerCase();
-      sessionStorage.setItem('mnExamenes', mnExamenes);
-    }
-    const mnExamenes1 = document.getElementById('mnExamenes1');
-    if (mnExamenes1) {
-      mnExamenes1.style.visibility = (mnExamenes === "true") ? 'visible' : 'hidden';
-    }
-    if (window.location.pathname.split('/').pop() === "Examen400.html" && mnExamenes === "false") {
+  try {    
+    msgCargando(true);
+    ExamenesURLS = await llamarAppScript("https://script.google.com/macros/s/AKfycbwcZfTNSKYeIWWR1xdeavEMyejaI-YXOP2-Y_pdnTG7RYjbFSgKo4zqLVSNIEjmQ9an/exec");
+    sessionStorage.setItem('ExamenesURLS', JSON.stringify(ExamenesURLS));
+    const datosAdm = JSON.parse(sessionStorage.getItem('ExamenesURLS'));
+
+    mnExamenes.style.visibility = (datosAdm.Menu === true) ? 'visible' : 'hidden';
+    /*if (window.location.pathname.split('/').pop() === "Examen400.html" && ExamenesURLS === "false") {
       window.location.href = "index.html";
       return;
-    }
-  } catch (e) {
-    msgError("Error al procesar configuraciones del menú");
-  } finally {
+    }*/
+  } 
+  catch (e) { msgError(e); } 
+  finally {
     msgCargando(false);
 
     // El DOM está completamente estructurado y los datos listos. Apagamos el esqueleto con seguridad.
@@ -253,8 +251,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         msgCargando(true);
 
         adminModalCfgs.hide();
-        await guardarUrlSemestres();
-        sessionStorage.removeItem('mnExamenes');
+        await guardarUrlSemestres();        
         msgAlerta("Configuraciones guardadas");
       }
       catch (e) { msgError("Error al guardar configuraciones ADM"); }
@@ -263,7 +260,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
-// FUNCIONES DE UTILIDAD Y COMPLEMENTOS
 function msgAlerta(message, delay = 3000) {
   let contenedor = document.getElementById('alerta-container');
   if (!contenedor) {
@@ -327,28 +323,48 @@ function msgCargando(b) {
   }
 }
 
-// INTERACCIONES CON LA API (GOOGLE SHEETS)
-async function obtenerUrlSem(semestre) {
+async function llamarAppScript(urlAppScript, metodo = 'GET', datosBody = null){
   try {
-    const response = await fetch(CONEXION, { method: 'GET', redirect: 'follow', cache: 'no-store' });
-    const data = await response.json();
+    // Codificamos directamente la URL del Apps Script para enviarla de forma segura por GET
+    let url = `${CONEXION}?target=${encodeURIComponent(urlAppScript)}`;
+    
+    const opciones = {
+      method: metodo,
+      cache: 'no-store'
+    };
 
-    for (let i = 0; i < data.length; i++) {
-      if (data[i][0].toString().toLowerCase() === semestre.toLowerCase()) {
-        return data[i][1];
-      }
+    if (metodo === 'POST' && datosBody) {
+      opciones.headers = { 'Content-Type': 'application/json' };
+      opciones.body = JSON.stringify(datosBody);
     }
-    return null;
+
+    const response = await fetch(url, opciones);
+    const data = await response.json(); 
+    return data; 
   } catch (e) {
-    msgError("Error al conectarse con Hoja ADM");
+    msgError("Error al conectarse con el servidor");
     return null;
   }
 }
 
-async function obtenerUrlSemestres() {
+// Función para obtener la URL del semestre a través del servidor
+async function obtenerUrlSem() {
+  try {    
+    const response = await fetch(CONEXION, { method: 'GET', cache: 'no-store' });
+    const data = await response.json(); 
+
+    return data; 
+  } catch (e) {
+    msgError("Error al conectarse con el servidor");
+    return null;
+  }
+}
+
+/*async function obtenerUrlSemestres() {
   try {
-    const response = await fetch(CONEXION, { method: 'GET', redirect: 'follow', cache: 'no-store' });
+    const response = await fetch(CONEXION, { method: 'GET', cache: 'no-store' });
     const data = await response.json();
+    
     if (data && data.length >= 7) {
       document.getElementById('primero').value = data[0][1];
       document.getElementById('segundo').value = data[1][1];
@@ -357,17 +373,16 @@ async function obtenerUrlSemestres() {
       document.getElementById('quinto').value = data[4][1];
       document.getElementById('sexto').value = data[5][1];
       document.getElementById('menu').checked = data[6][1];
+    } else {
+      msgError("La configuración no contiene las filas necesarias.");
     }
-    else {
-      msgError("La hoja ADM no contiene las 7 filas necesarias.");
-    }
-  }
-  catch (e) {
-    msgError("Error al conectarse Hoja ADM");
+  } catch (e) {
+    msgError("Error al conectarse con el servidor");
     return null;
   }
-}
+}*/
 
+// Función para guardar configuraciones en admin
 async function guardarUrlSemestres() {
   try {
     const datosAGuardar = {
@@ -380,23 +395,22 @@ async function guardarUrlSemestres() {
       menu: document.getElementById('menu').checked
     };
 
+    // Enviamos por POST al proxy PHP
     const response = await fetch(CONEXION, {
       method: 'POST',
-      redirect: 'follow',
-      cache: 'no-store',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(datosAGuardar)
     });
 
     const data = await response.json();
-
-    if (data && data.status === 'yes') { return true; }
-    else {
-      msgError("Error al guardar en la hoja ADM: " + (data.message || "Error desconocido"));
+    if (data && data.status === 'yes') { 
+      return true; 
+    } else {
+      msgError("Error al guardar: " + (data.message || "Error desconocido"));
       return false;
     }
-  }
-  catch (e) {
-    msgError("Error al conectarse con Hoja ADM");
+  } catch (e) {
+    msgError("Error al comunicarse con el servidor");
     return false;
   }
 }

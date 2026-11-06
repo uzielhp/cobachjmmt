@@ -98,20 +98,13 @@
     let respuestasCorrectas = {};
     let examenTerminado = true;
     let HOJA = "";
-    let vecesSalio = sessionStorage.getItem('vecesSalio') || "0";
+    let vecesSalio = "0";//sessionStorage.getItem('vecesSalio') || "0";
+    const datosAdm = JSON.parse(sessionStorage.getItem('ExamenesURLS'));
+    // ENVÍO Y PROCESAMIENTO DE RESPUESTAS
+    const form = document.getElementById('studentForm');
+    const submitBtn = document.getElementById('submitBtn');
 
-    // Modifica visualmente el botón de envío si hay registros de salida
-    function actualizarVecesSalio() {
-      const numSalidas = parseInt(vecesSalio, 10);
-      if (numSalidas > 0) {
-        const btn = document.getElementById('submitBtn');
-        if (btn) {
-          btn.innerHTML = `Enviar (Te saliste ${numSalidas} ${numSalidas === 1 ? 'vez' : 'veces'}) <i class="bi bi-send ms-2"></i>`;
-        }
-      }
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', () => {      
       // Inicialización perezosa del modal después de que principal.js inyectó el footer
       const modalElement = document.getElementById('modalSaliste');
       if (modalElement) {
@@ -128,49 +121,29 @@
       }
 
       // Ejecución de rutinas de carga inicial
-      actualizarVecesSalio();
-      cargarPreguntas();
+      actualizarVecesSalio();      
+      cargarPreguntas();      
     });
+    
+    async function cargarPreguntas() {      
+      msgCargando(true);      
+      
+      try {        
+        HOJA = datosAdm.s500;        
+        if (!HOJA) { msgError("Error al conectarse Hoja Semestre"); return; }
 
-    // LÓGICA DEL EXAMEN
-    function revolverArreglo(arreglo) {
-      for (let i = arreglo.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arreglo[i], arreglo[j]] = [arreglo[j], arreglo[i]];
-      }
-      return arreglo;
-    }
-
-    async function cargarPreguntas() {
-      msgCargando(true);
-
-      try {
-        HOJA = await obtenerUrlSem('500');
-        if (!HOJA) { msgError("Error al conectarse Hoja ADM"); return; }
-
-        const response = await fetch(HOJA, { method: 'GET', cache: 'no-store' });
-        if (!response.ok) { msgError("Error al conectarse Hoja Semestre"); return; }
-
-        const data = await response.json();
+        const data = await llamarAppScript(HOJA);
         
-        // --- PROCESAR IMÁGENES LOCALES (1.jpg, 1.jpeg, 2.jpg, 2.jpeg, ...) ---
+        // Imágenes por examen
         const carpetaImagenes = 'imgs/examen/';
-        let htmlImagenes = '';
-
-        // Assumiendo un máximo de 20 imágenes por examen
-        for (let i = 1; i <= 20; i++) {
+        let htmlImagenes = '';                
+        for (let i = 1; i <= datosAdm.Imagenes; i++) {
           const rutaJpg = `${carpetaImagenes}${i}.jpg`;
-          const rutaJpeg = `${carpetaImagenes}${i}.jpeg`;
-
-          // Intentamos cargar la versión .jpg y .jpeg de cada número
           htmlImagenes += `
             <img src="${rutaJpg}" class="img-fluid w-100 rounded shadow-sm mb-3" alt="Imagen ${i}" onerror="this.style.display='none'">
-            <img src="${rutaJpeg}" class="img-fluid w-100 rounded shadow-sm mb-3" alt="Imagen ${i}" onerror="this.style.display='none'">
           `;
         }
-
-        document.getElementById('imagenesContainer').innerHTML = htmlImagenes;
-        // --- FIN IMÁGENES LOCALES ---
+        document.getElementById('imagenesContainer').innerHTML = htmlImagenes;        
 
         let htmlContent = '';
         let numPregunta = 0;
@@ -232,6 +205,25 @@
       finally { msgCargando(false); }
     }
 
+    // LÓGICA DEL EXAMEN
+    function revolverArreglo(arreglo) {
+      for (let i = arreglo.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arreglo[i], arreglo[j]] = [arreglo[j], arreglo[i]];
+      }
+      return arreglo;
+    }
+    // Modifica visualmente el botón de envío si hay registros de salida
+    function actualizarVecesSalio() {
+      const numSalidas = parseInt(vecesSalio, 10);
+      if (numSalidas > 0) {
+        const btn = document.getElementById('submitBtn');
+        if (btn) {
+          btn.innerHTML = `Enviar (Te saliste ${numSalidas} ${numSalidas === 1 ? 'vez' : 'veces'}) <i class="bi bi-send ms-2"></i>`;
+        }
+      }
+    }
+
     // SEGURIDAD ANTI-TRAMPAS (LISTENERS)   
     document.addEventListener('visibilitychange', () => {
       if (examenTerminado) return;
@@ -248,20 +240,14 @@
         e.preventDefault();
         msgAlerta('Acción no permitida');
       }
-    });
-
-    // ENVÍO Y PROCESAMIENTO DE RESPUESTAS
-    const form = document.getElementById('studentForm');
-    const submitBtn = document.getElementById('submitBtn');
+    });    
 
     form.addEventListener('submit', async e => {
       e.preventDefault();
 
       if (!form.checkValidity()) {
         e.stopPropagation();
-        form.classList.add('was-validated'); // Enciende los bordes rojos en los campos vacíos
-
-        // Extra: Hace scroll automático hacia el primer campo que el alumno dejó vacío
+        form.classList.add('was-validated');
         const primerError = form.querySelector(':invalid');
         if (primerError) {
           primerError.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -271,14 +257,12 @@
 
       msgCargando(true);
       try {
-        // Ocultamos el botón para evitar dobles envíos accidentales
         submitBtn.classList.add('d-none');
         msgError("Guardando y calificando...");
 
         const formData = new FormData(form);
         let aciertos = 0;
 
-        // Calificación automática de respuestas
         for (const [preguntaKey, respuestaCorrecta] of Object.entries(respuestasCorrectas)) {
           const respuestaAlumno = formData.get(preguntaKey);
           if (respuestaAlumno && respuestaAlumno.toString().trim().toLowerCase() === respuestaCorrecta) {
@@ -292,23 +276,25 @@
         formData.append('vecesSalio', vecesSalio);
         formData.append('totalCorrectas', aciertos);
 
+        // CAMBIO: En lugar de enviar directo a Google con 'no-cors', 
+        // enviamos los datos a un endpoint de tu servidor para que este los reenvíe a Google.
+        const objetoDatos = Object.fromEntries(formData.entries());
 
-        // Con el await, JavaScript espera de verdad a que Google Sheets responda
-        await fetch(HOJA, { method: 'POST', body: formData, mode: 'no-cors' });
+        await fetch('/api/enviar-examen', { 
+          method: 'POST', 
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(objetoDatos) 
+        });
 
         examenTerminado = true;
         msgError("¡Tus respuestas se han guardado! Examen finalizado");
         sessionStorage.removeItem('vecesSalio');
 
-        // Deshabilitamos controles para que no los vuelvan a cambiar
         const inputs = form.querySelectorAll('input, select, button');
         inputs.forEach(input => input.disabled = true);
-
-      }
-      catch (e) {
-        msgError('Error al guardar las preguntas');
-      }
-      finally {
+      } catch (e) {
+        msgError('Error al guardar las respuestas');
+      } finally {
         submitBtn.classList.remove('d-none');
         msgCargando(false);
       }
