@@ -1,7 +1,6 @@
 const CONEXION = 'proxy.php';
 let ExamenesURLS = sessionStorage.getItem('ExamenesURLS') || null;
-//sessionStorage.setItem('ExamenesURLS', ExamenesURLS);
-//sessionStorage.removeItem('ExamenesURLS');
+let peticionesActivas = 0;
 
 // CONTROLADOR DE VISIBILIDAD OPTIMIZADO
 function toggleD(comp, show) {
@@ -63,12 +62,12 @@ class HMenu extends HTMLElement {
             </li>        
             <li class="nav-item" id="mnExamenes">
               <h2 class="h6 fw-bold mt-2 mb-1" style="color: var(--bg-titulo);">Exámenes</h2>
-              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen100.html">100s</a>
-              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen200.html">200s</a>
-              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen300.html">300s</a><br/>
-              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen400.html">400s</a>         
-              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen500.html">500s</a>
-              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen600.html">600s</a>
+              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen100.html" data-hoja="s100">100s</a>
+              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen200.html" data-hoja="s200">200s</a>
+              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen300.html" data-hoja="s300">300s</a><br/>
+              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen400.html" data-hoja="s400">400s</a>         
+              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen500.html" data-hoja="s500">500s</a>
+              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen600.html" data-hoja="s600">600s</a>
             </li>        
           </ul>
         </nav>
@@ -298,7 +297,6 @@ function msgError(mensaje) {
 }
 
 // Variable global para llevar el conteo de procesos asíncronos en el COBACH
-let peticionesActivas = 0;
 function msgCargando(b) {
   const loaderNode1 = document.getElementById('msgC1');
   const loaderNode2 = document.getElementById('msgC2');

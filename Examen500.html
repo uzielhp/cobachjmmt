@@ -98,11 +98,12 @@
     let respuestasCorrectas = {};
     let examenTerminado = true;
     let HOJA = "";
+    const claveHoja = document.querySelector('#mnExamenes a.active')?.getAttribute('data-hoja');
     let vecesSalio = "0";//sessionStorage.getItem('vecesSalio') || "0";
     const datosAdm = JSON.parse(sessionStorage.getItem('ExamenesURLS'));
     // ENVÍO Y PROCESAMIENTO DE RESPUESTAS
     const form = document.getElementById('studentForm');
-    const submitBtn = document.getElementById('submitBtn');
+    const submitBtn = document.getElementById('submitBtn');    
 
     window.addEventListener('DOMContentLoaded', () => {      
       // Inicialización perezosa del modal después de que principal.js inyectó el footer
@@ -124,12 +125,13 @@
       actualizarVecesSalio();      
       cargarPreguntas();      
     });
-    
+
     async function cargarPreguntas() {      
       msgCargando(true);      
       
       try {        
-        HOJA = datosAdm.s500;        
+        HOJA = datosAdm[claveHoja];        
+        console.log(claveHoja);
         if (!HOJA) { msgError("Error al conectarse Hoja Semestre"); return; }
 
         const data = await llamarAppScript(HOJA);
