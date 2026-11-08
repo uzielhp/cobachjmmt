@@ -2,17 +2,10 @@ const CONEXION = 'proxy.php';
 let ExamenesURLS = sessionStorage.getItem('ExamenesURLS') || null;
 let peticionesActivas = 0;
 
-// CONTROLADOR DE VISIBILIDAD OPTIMIZADO
-function toggleD(comp, show) {
-  const loader = document.querySelector(comp);
-  if (!loader) return;
-  loader.style.display = show ? "block" : "none";
-}
-
 class HCargando extends HTMLElement {
   connectedCallback() {
-    this.innerHTML = `
-    <div aria-hidden="true" class="placeholder-glow d-flex flex-column bg-dark min-vh-100 m-0 p-0">
+  this.innerHTML = `
+  <div aria-hidden="true" class="placeholder-glow d-flex flex-column bg-dark min-vh-100 m-0 p-0">
       <div class="navbar" style="height: 50px;">
         <div class="container-fluid d-flex justify-content-between align-items-center">
           <div class="d-flex align-items-center gap-3 col-4 col-md-2">        
@@ -62,12 +55,12 @@ class HMenu extends HTMLElement {
             </li>        
             <li class="nav-item" id="mnExamenes">
               <h2 class="h6 fw-bold mt-2 mb-1" style="color: var(--bg-titulo);">Exámenes</h2>
-              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen100.html" data-hoja="s100">100s</a>
-              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen200.html" data-hoja="s200">200s</a>
-              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen300.html" data-hoja="s300">300s</a><br/>
-              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen400.html" data-hoja="s400">400s</a>         
-              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen500.html" data-hoja="s500">500s</a>
-              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen600.html" data-hoja="s600">600s</a>
+              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen.html" data-hoja="s100">100s</a>
+              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen.html" data-hoja="s200">200s</a>
+              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen.html" data-hoja="s300">300s</a><br/>
+              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen.html" data-hoja="s400">400s</a>         
+              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen.html" data-hoja="s500">500s</a>
+              <a class="nav-link text-white-50 fs-6 py-1 ps-2" href="Examen.html" data-hoja="s600">600s</a>
             </li>        
           </ul>
         </nav>
@@ -76,6 +69,133 @@ class HMenu extends HTMLElement {
   }
 }
 customElements.define('h-menu', HMenu);
+
+// CONTROLADORES DE EVENTOS DEL DOM
+document.addEventListener('DOMContentLoaded', async () => {
+  Modals();
+  const menuExamenes = document.getElementById('mnExamenes');
+  menuExamenes.addEventListener('click', (e) => {
+    const enlace = e.target.closest('a[data-hoja]');
+    if (!enlace) return; // Si no hizo clic en un enlace con data-hoja, no hacemos nada
+
+    const hoja = enlace.dataset.hoja;
+    sessionStorage.setItem('Examen', hoja);
+  });
+  
+  try {        
+    msgCargando(true);    
+    await llamarDatosAdm();
+    const datosAdm = obtenerDatosAdm();
+    mnExamenes.style.visibility = (datosAdm.Menu === true) ? 'visible' : 'hidden';
+    /*if (window.location.pathname.split('/').pop() === "Examen400.html" && ExamenesURLS === "false") {
+      window.location.href = "index.html";
+      return;
+    }*/   
+  } 
+  catch (e) { msgError(e); } 
+  finally {
+    msgCargando(false);
+
+    // El DOM está completamente estructurado y los datos listos. Apagamos el esqueleto con seguridad.
+    toggleD('h-cargando', false);
+    toggleD('h-menu', true);
+    toggleD('main', true); // Asegúrate de tener la etiqueta <main> en tus archivos HTML
+  }  
+  // Referencias seguras a los elementos del DOM
+  const htmlAdminModal = document.getElementById('adminModal');
+  const formulario = document.getElementById('formAdmin');
+  const btnGuardarCfgs = document.getElementById('btnGuardarCfgs');
+  const adminModalCfgs = new bootstrap.Modal(document.getElementById('adminModalCfgs'));
+
+  // Dar Foco automático al Input de Contraseña al abrir el primer Modal
+  if (htmlAdminModal) {
+    htmlAdminModal.addEventListener('shown.bs.modal', () => {
+      if (contratxt) { contratxt.focus(); }
+    });
+  }
+
+  // Envío y validación del formulario (Responde a Enter y a Click en Guardar)
+
+  if (formulario) {
+    formulario.addEventListener('submit', async e => {
+      try {
+        e.preventDefault();
+        msgCargando(true);
+
+        // Cerramos el modal de autenticación de forma segura
+        const modalActual = bootstrap.Modal.getInstance(htmlAdminModal) || new bootstrap.Modal(htmlAdminModal);
+        const contraerror = document.getElementById('contraerror');
+        const datosAdm = obtenerDatosAdm();        
+
+        // Añadimos estilos de validación visual de Bootstrap
+        formulario.classList.add('was-validated');
+
+        if (formulario.checkValidity()) {
+          if (document.getElementById('contra').value === datosAdm.Contra.toString()) {
+            formulario.classList.remove('was-validated');
+            formulario.reset();
+
+            // Cargamos configuraciones y abrimos el segundo modal de pantalla completa
+            modalActual.hide();
+            document.getElementById('primero').value = datosAdm.s100;
+            document.getElementById('segundo').value = datosAdm.s200;
+            document.getElementById('tercero').value = datosAdm.s300;
+            document.getElementById('cuarto').value = datosAdm.s400;
+            document.getElementById('quinto').value = datosAdm.s500;
+            document.getElementById('sexto').value = datosAdm.s600;
+            document.getElementById('menu').checked = datosAdm.Menu;
+            adminModalCfgs.show();
+          }
+          else {
+            formulario.reset();
+          }
+        }
+      }
+      catch (e) { msgError("Error al validar contraseña"); }
+      finally { msgCargando(false); }
+    });
+  }
+
+  // Guardar Configuraciones del Segundo Modal (adminModalCfgs)
+  if (btnGuardarCfgs) {
+    btnGuardarCfgs.addEventListener('click', async function (e) {
+      try {
+        e.preventDefault();
+        msgCargando(true);
+
+        adminModalCfgs.hide();
+        const datosA = {
+          primero: document.getElementById('primero').value,
+          segundo: document.getElementById('segundo').value,
+          tercer: document.getElementById('tercero').value,
+          cuarto: document.getElementById('cuarto').value,
+          quinto: document.getElementById('quinto').value,
+          sexto: document.getElementById('sexto').value,
+          menu: document.getElementById('menu').checked
+        };      
+        const data = await llamarAppScript(null, 'POST', datosA);          
+        if (data.status === 'yes') { 
+          llamarDatosAdm(); // Actualizamos los datos en sessionStorage después de guardar
+          msgAlerta("Configuraciones guardadas"); 
+        }
+      }
+      catch (e) { msgError("Error al guardar configuraciones ADM"); }
+      finally { msgCargando(false); }
+    });
+  }
+});
+
+function obtenerDatosAdm() {
+  const datos = sessionStorage.getItem('ExamenesURLS');
+  return datos ? JSON.parse(datos) : null;
+}
+
+async function llamarDatosAdm() {
+  const respuesta = await llamarAppScript();
+  if (respuesta) {
+    sessionStorage.setItem('ExamenesURLS', JSON.stringify(respuesta));
+  }
+}
 
 async function Modals() {
   const footer = document.querySelector('footer');
@@ -165,99 +285,12 @@ async function Modals() {
   `;
 }
 
-// CONTROLADORES DE EVENTOS DEL DOM
-document.addEventListener('DOMContentLoaded', async () => {
-  Modals();  
-  // Opciones del menú.ini
-  try {    
-    msgCargando(true);
-    ExamenesURLS = await llamarAppScript("https://script.google.com/macros/s/AKfycbwcZfTNSKYeIWWR1xdeavEMyejaI-YXOP2-Y_pdnTG7RYjbFSgKo4zqLVSNIEjmQ9an/exec");
-    sessionStorage.setItem('ExamenesURLS', JSON.stringify(ExamenesURLS));
-    const datosAdm = JSON.parse(sessionStorage.getItem('ExamenesURLS'));
-
-    mnExamenes.style.visibility = (datosAdm.Menu === true) ? 'visible' : 'hidden';
-    /*if (window.location.pathname.split('/').pop() === "Examen400.html" && ExamenesURLS === "false") {
-      window.location.href = "index.html";
-      return;
-    }*/
-  } 
-  catch (e) { msgError(e); } 
-  finally {
-    msgCargando(false);
-
-    // El DOM está completamente estructurado y los datos listos. Apagamos el esqueleto con seguridad.
-    toggleD('h-cargando', false);
-    toggleD('h-menu', true);
-    toggleD('main', true); // Asegúrate de tener la etiqueta <main> en tus archivos HTML
-  }
-  // Opciones del menú.fin
-
-  // Referencias seguras a los elementos del DOM
-  const htmlAdminModal = document.getElementById('adminModal');
-  const formulario = document.getElementById('formAdmin');
-  const btnGuardarCfgs = document.getElementById('btnGuardarCfgs');
-  const adminModalCfgs = new bootstrap.Modal(document.getElementById('adminModalCfgs'));
-  const contratxt = document.getElementById('contra');
-
-  // Dar Foco automático al Input de Contraseña al abrir el primer Modal
-  if (htmlAdminModal) {
-    htmlAdminModal.addEventListener('shown.bs.modal', () => {
-      if (contratxt) { contratxt.focus(); }
-    });
-  }
-
-  // Envío y validación del formulario (Responde a Enter y a Click en Guardar)
-
-  if (formulario) {
-    formulario.addEventListener('submit', async e => {
-      try {
-        e.preventDefault();
-        msgCargando(true);
-
-        // Cerramos el modal de autenticación de forma segura
-        const modalActual = bootstrap.Modal.getInstance(htmlAdminModal) || new bootstrap.Modal(htmlAdminModal);
-        const contraerror = document.getElementById('contraerror');
-        const contra = await obtenerUrlSem("Contra");
-
-        // Añadimos estilos de validación visual de Bootstrap
-        formulario.classList.add('was-validated');
-
-        if (formulario.checkValidity()) {
-          if (contratxt.value === contra.toString()) {
-            formulario.classList.remove('was-validated');
-            formulario.reset();
-
-            // Cargamos configuraciones y abrimos el segundo modal de pantalla completa
-            modalActual.hide();
-            await obtenerUrlSemestres();
-            adminModalCfgs.show();
-          }
-          else {
-            formulario.reset();
-          }
-        }
-      }
-      catch (e) { msgError("Error al validar contraseña"); }
-      finally { msgCargando(false); }
-    });
-  }
-
-  // Guardar Configuraciones del Segundo Modal (adminModalCfgs)
-  if (btnGuardarCfgs) {
-    btnGuardarCfgs.addEventListener('click', async function (e) {
-      try {
-        e.preventDefault();
-        msgCargando(true);
-
-        adminModalCfgs.hide();
-        await guardarUrlSemestres();        
-        msgAlerta("Configuraciones guardadas");
-      }
-      catch (e) { msgError("Error al guardar configuraciones ADM"); }
-      finally { msgCargando(false); }
-    });
-  }
-});
+// CONTROLADOR DE VISIBILIDAD OPTIMIZADO
+function toggleD(comp, show) {
+  const loader = document.querySelector(comp);
+  if (!loader) return;
+  loader.style.display = show ? "block" : "none";
+}
 
 function msgAlerta(message, delay = 3000) {
   let contenedor = document.getElementById('alerta-container');
@@ -321,19 +354,17 @@ function msgCargando(b) {
   }
 }
 
-async function llamarAppScript(urlAppScript, metodo = 'GET', datosBody = null){
+async function llamarAppScript(urlAppScript = null, metodo = 'GET', datosA = null){
   try {
     // Codificamos directamente la URL del Apps Script para enviarla de forma segura por GET
+    if (urlAppScript === null) { urlAppScript = "https://script.google.com/macros/s/AKfycbwcZfTNSKYeIWWR1xdeavEMyejaI-YXOP2-Y_pdnTG7RYjbFSgKo4zqLVSNIEjmQ9an/exec"; }
     let url = `${CONEXION}?target=${encodeURIComponent(urlAppScript)}`;
     
-    const opciones = {
-      method: metodo,
-      cache: 'no-store'
-    };
+    const opciones = { method: metodo, cache: 'no-store' };
 
-    if (metodo === 'POST' && datosBody) {
+    if (metodo === 'POST' && datosA) {
       opciones.headers = { 'Content-Type': 'application/json' };
-      opciones.body = JSON.stringify(datosBody);
+      opciones.body = JSON.stringify(datosA);
     }
 
     const response = await fetch(url, opciones);
@@ -342,73 +373,5 @@ async function llamarAppScript(urlAppScript, metodo = 'GET', datosBody = null){
   } catch (e) {
     msgError("Error al conectarse con el servidor");
     return null;
-  }
-}
-
-// Función para obtener la URL del semestre a través del servidor
-async function obtenerUrlSem() {
-  try {    
-    const response = await fetch(CONEXION, { method: 'GET', cache: 'no-store' });
-    const data = await response.json(); 
-
-    return data; 
-  } catch (e) {
-    msgError("Error al conectarse con el servidor");
-    return null;
-  }
-}
-
-/*async function obtenerUrlSemestres() {
-  try {
-    const response = await fetch(CONEXION, { method: 'GET', cache: 'no-store' });
-    const data = await response.json();
-    
-    if (data && data.length >= 7) {
-      document.getElementById('primero').value = data[0][1];
-      document.getElementById('segundo').value = data[1][1];
-      document.getElementById('tercero').value = data[2][1];
-      document.getElementById('cuarto').value = data[3][1];
-      document.getElementById('quinto').value = data[4][1];
-      document.getElementById('sexto').value = data[5][1];
-      document.getElementById('menu').checked = data[6][1];
-    } else {
-      msgError("La configuración no contiene las filas necesarias.");
-    }
-  } catch (e) {
-    msgError("Error al conectarse con el servidor");
-    return null;
-  }
-}*/
-
-// Función para guardar configuraciones en admin
-async function guardarUrlSemestres() {
-  try {
-    const datosAGuardar = {
-      primero: document.getElementById('primero').value,
-      segundo: document.getElementById('segundo').value,
-      tercer: document.getElementById('tercero').value,
-      cuarto: document.getElementById('cuarto').value,
-      quinto: document.getElementById('quinto').value,
-      sexto: document.getElementById('sexto').value,
-      menu: document.getElementById('menu').checked
-    };
-
-    // Enviamos por POST al proxy PHP
-    const response = await fetch(CONEXION, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(datosAGuardar)
-    });
-
-    const data = await response.json();
-    if (data && data.status === 'yes') { 
-      return true; 
-    } else {
-      msgError("Error al guardar: " + (data.message || "Error desconocido"));
-      return false;
-    }
-  } catch (e) {
-    msgError("Error al comunicarse con el servidor");
-    return false;
   }
 }
