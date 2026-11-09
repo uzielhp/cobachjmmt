@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>COBACH JMMT</title>
+  <link rel="icon" type="image/png" href="imgs/favicon.png" />
+
+  <link rel="stylesheet" href="bootstrap-icons.min.css">
+  <link rel="stylesheet" href="bootstrap.min.css">
+  <link rel="stylesheet" href="principal.css">
+
+  <script type="module" src="bootstrap.bundle.min.js"></script>
+  <script src="principal.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      fetch('galeria.json')
+        .then(response => response.json())
+        .then(imagenes => {
+          const contenedor = document.getElementById('galeriaCarousel');
+          const indicadores = document.getElementById('carouselIndicators');
+          
+          contenedor.innerHTML = ''; // Limpiar contenedor
+          indicadores.innerHTML = ''; // Limpiar indicadores
+
+          // 1. Mezclar aleatoriamente el arreglo de imágenes y tomar máximo 10
+          const imagenesAleatorias = imagenes
+            .sort(() => Math.random() - 0.5)
+            .slice(0, 10);
+
+          imagenesAleatorias.forEach((imagenSrc, index) => {
+            const isActive = index === 0 ? ' active' : '';            
+            
+            // Crear item del carrusel
+            const itemHtml = `
+              <div class="carousel-item${isActive}" style="max-width: 100%;">
+                <div style="height: 600px; max-width: 100%; overflow: hidden;">                  
+                  <img src="${imagenSrc}" class="d-block rounded-5" style="width: 100% !important; height: 100% !important; max-width: 100% !important; object-fit: contain;" alt="...">
+                </div>
+              </div>
+            `;
+            contenedor.insertAdjacentHTML('beforeend', itemHtml);
+
+            // Crear botón indicador correspondiente
+            const indicadorHtml = `
+              <button type="button" data-bs-target="#carouselVariable" data-bs-slide-to="${index}" class="${index === 0 ? 'active' : ''}" aria-current="${index === 0 ? 'true' : 'false'}" aria-label="Slide ${index + 1}"></button>
+            `;
+            indicadores.insertAdjacentHTML('beforeend', indicadorHtml);
+          });          
+        })
+        .catch(error => console.error('Error al cargar galeria.json:', error));
+    });
+  </script>
+</head>
+
+<body>        
+  <h-cargando></h-cargando>
+  <h-menu></h-menu>
+  
+  <main>    
+    <div id="carouselVariable" class="carousel carousel-auto slide" data-bs-ride="carousel" style="--bs-carousel-items-gap: 1rem; max-width: 100%; overflow: hidden;">
+      <div id="galeriaCarousel" class="carousel-inner" style="max-width: 100%; overflow: hidden;">
+        <!-- Las imágenes aleatorias se cargarán aquí de forma dinámica -->
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div id="carouselIndicators" class="carousel-indicators">
+          <!-- Los indicadores se generarán dinámicamente -->
+        </div>
+        <div>
+          <button class="btn-icon btn-sm" type="button" data-bs-target="#carouselVariable" data-bs-slide="prev" style="--bs-carousel-control-icon-width: 1rem;">
+            <span class="carousel-icon-prev" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+          </button>
+          <button class="btn-icon btn-sm" type="button" data-bs-target="#carouselVariable" data-bs-slide="next" style="--bs-carousel-control-icon-width: 1rem;">
+            <span class="carousel-icon-next" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+</body>  
+
+</html>

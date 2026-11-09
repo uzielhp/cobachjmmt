@@ -6,17 +6,13 @@
   --transition-smooth: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-h-menu,
-main {
+h-menu, main {
   display: none;
-}
-
-main {
-  margin-top: 50px;
 }
 
 /*Protección para no seleccionar texto */
 body {
+  padding-top: 50px;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -101,38 +97,37 @@ span {
   animation: glow 2s infinite;
 }
 
-.logo {
+/*.logo {
   height: 40px;
   width: auto;
-}
+}*/
 
 /* Botón MENU.ini */
 .custom-toggler:hover i {
   color: var(--bg-titulo);
 }
 
-.nav-item {
-  /*background-color: var(--bg-obsidian);*/
+/*.nav-item {  
   border-left: 2px solid var(--bg-titulo);
   margin-bottom: 5px;
   padding-left: 10px;
-}
+}*/
 
-.nav-link {
+/*.nav-link {
   position: relative;
   transition: color 0.3s ease;
   display: inline-flex !important;
   padding: 0 !important;
   margin: 0 !important;
-}
+}*/
 
-.nav-link:hover,
+/*.nav-link:hover,
 .nav-link:focus {
   color: #ffffff !important;
-}
+}*/
 
 /* Línea naranja para el menú principal */
-.nav-link::after {
+/*.nav-link::after {
   content: '';
   position: absolute;
   left: 0;
@@ -143,14 +138,14 @@ span {
   transform: scaleX(0);
   transform-origin: bottom right;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
+}*/
 
 /* Animación al pasar el mouse en el menú principal */
-.nav-link:hover::after,
+/*.nav-link:hover::after,
 .nav-link:focus::after {
   transform: scaleX(1);
   transform-origin: bottom left;
-}
+}*/
 
 /* EFECTO LOGO RECARGA */
 .contenedor-logo {

@@ -4,19 +4,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>COBACH JMMT - Galería</title>
+  <title>COBACH JMMT</title>
   <link rel="icon" type="image/png" href="imgs/favicon.png" />
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-    crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-
+  <link rel="stylesheet" href="bootstrap-icons.min.css">
+  <link rel="stylesheet" href="bootstrap.min.css">
   <link rel="stylesheet" href="principal.css">
-  <script src="principal.js"></script>
 
+  <script src="principal.js"></script>
 </head>
 
 <body>  
@@ -38,21 +33,17 @@
     // CONFIGURACIÓN DE LA GALERÍA
     const config = {
       jsonUrl: 'galeria.json',
-      loteInicial: 15,      // Carga inicial para pintar la UI velozmente
-      loteSubsecuente: 6    // Lotes de carga por scroll
+      limiteImagenes: 12 // Cantidad fija de imágenes aleatorias a mostrar
     };
 
-    // ESTADO DE LA APLICACIÓN (Encapsulado para control de flujo)
+    // ESTADO DE LA APLICACIÓN
     const appState = {
       imagenes: [],
-      indiceActual: 0,
-      cargando: false,
       columnasDOM: [],
       indiceColumnaActual: 0
     };
 
     const contenedor = document.getElementById('collage-container');
-    let observadorScroll = null;
 
     // 1. GENERACIÓN DINÁMICA DE COLUMNAS RESPONSIVAS
     function prepararColumnas() {
@@ -72,10 +63,15 @@
       contenedor.appendChild(fragmento);
     }
 
-    // 2. ORDENAMIENTO NATURAL DE RUTAS ALFANUMÉRICAS (1.2.jpg -> 1.10.jpg)
-    function ordenarRutasNatural(rutas) {
-      const colator = new Intl.Collator('es', { numeric: true, sensitivity: 'base' });
-      return rutas.sort((a, b) => colator.compare(a, b));
+    // 2. SELECCIÓN ALEATORIA DE IMÁGENES
+    function obtenerImagenesAleatorias(rutas, cantidad) {
+      const copia = [...rutas];
+      // Mezcla de Fisher-Yates para aleatorizar el arreglo
+      for (let i = copia.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copia[i], copia[j]] = [copia[j], copia[i]];
+      }
+      return copia.slice(0, cantidad);
     }
 
     // 3. LAZY LOAD DE IMÁGENES (Ahorro de ancho de banda)
@@ -123,55 +119,7 @@
       observadorVisual.observe(elemento);
     }
 
-    // 5. CONTROLADOR DE FLUJO ASÍNCRONO DE LOTES
-    async function cargarLoteDeFotos(tamanoLote) {
-      if (appState.cargando || appState.indiceActual >= appState.imagenes.length) return;
-
-      appState.cargando = true;
-      const limite = Math.min(appState.indiceActual + tamanoLote, appState.imagenes.length);
-      const promesasImagenes = [];
-
-      for (let i = appState.indiceActual; i < limite; i++) {
-        const ruta = appState.imagenes[i];
-        inyectarPlaceholder(ruta);
-
-        const promesaPreload = new Promise((resolve) => {
-          const imgPreload = new Image();
-          imgPreload.src = ruta;
-          imgPreload.onload = () => resolve();
-          imgPreload.onerror = () => resolve();
-        });
-        promesasImagenes.push(promesaPreload);
-      }
-
-      appState.indiceActual = limite;
-
-      // Espera reactiva para estabilizar el layout antes de liberar el semáforo
-      await Promise.all(promesasImagenes);
-      appState.cargando = false;
-    }
-
-    // 6. DETECTOR DE SCROLL INFINITO MEDIANTE CENTINELA
-    function configurarScrollInfinito() {
-      const centinelaPrevio = document.getElementById('galeria-centinela');
-      if (centinelaPrevio) centinelaPrevio.remove();
-
-      const centinela = document.createElement('div');
-      centinela.id = 'galeria-centinela';
-      centinela.className = 'w-100';
-      centinela.style.height = '15px';
-      contenedor.parentNode.insertBefore(centinela, contenedor.nextSibling);
-
-      observadorScroll = new IntersectionObserver((entradas) => {
-        if (entradas[0].isIntersecting && !appState.cargando && appState.indiceActual < appState.imagenes.length) {
-          cargarLoteDeFotos(config.loteSubsecuente);
-        }
-      }, { rootMargin: '0px 0px 600px 0px' }); // Margen amplio para evitar cortes de scroll bruscos
-
-      observadorScroll.observe(centinela);
-    }
-
-    // 7. ORQUESTRADOR DE INICIALIZACIÓN SECUENCIAL
+    // 5. ORQUESTRADOR DE INICIALIZACIÓN
     async function inicializarGaleria() {
       try {
         prepararColumnas();
@@ -181,38 +129,30 @@
         if (!respuesta.ok) throw new Error(`Error HTTP: ${respuesta.status}`);
 
         const datosRaw = await respuesta.json();
-        appState.imagenes = ordenarRutasNatural(datosRaw);
+        
+        // Selecciona aleatoriamente hasta 10 imágenes (o el total si el JSON tiene menos de 10)
+        appState.imagenes = obtenerImagenesAleatorias(datosRaw, config.limiteImagenes);
 
-        // Renderizado del lote inicial y bloqueo controlado
-        await cargarLoteDeFotos(config.loteInicial);
-
-        // Activación del escuchador físico de scroll
-        configurarScrollInfinito();
-
-        // VERIFICACIÓN DE SEGURIDAD PARA PANTALLAS DE ALTA RESOLUCIÓN (3 Columnas)
-        // Si tras el lote inicial el centinela sigue dentro del viewport del cliente,
-        // forzamos la inyección del siguiente lote de manera inmediata.
-        setTimeout(() => {
-          const centinela = document.getElementById('galeria-centinela');
-          if (centinela) {
-            const rect = centinela.getBoundingClientRect();
-            const visibleEnPantalla = rect.top < (window.innerHeight || document.documentElement.clientHeight);
-
-            if (visibleEnPantalla && !appState.cargando && appState.indiceActual < appState.imagenes.length) {
-              cargarLoteDeFotos(config.loteSubsecuente);
-            }
-          }
-        }, 350);
+        // Renderizar las imágenes seleccionadas
+        appState.imagenes.forEach(ruta => {
+          inyectarPlaceholder(ruta);
+        });
 
       } 
       catch (e) {
-        msgError("Error al inicializar galería");
+        if (typeof msgError === 'function') {
+          msgError("Error al inicializar galería");
+        } else {
+          console.error("Error al inicializar galería", e);
+        }
       }
     }
 
     // Inicialización del script respetando el ciclo de vida del DOM
     document.addEventListener('DOMContentLoaded', inicializarGaleria);
   </script>
+  
+  <script type="module" src="bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
