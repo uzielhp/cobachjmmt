@@ -53,7 +53,7 @@ class HMenu extends HTMLElement {
 customElements.define('h-menu', HMenu);
 
 document.addEventListener('DOMContentLoaded', async () => {
-  Modals();
+  await Modals();
 
   const menuExamenes = document.getElementById('mnExamenes');
   menuExamenes.addEventListener('click', (e) => {
@@ -72,8 +72,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.location.pathname.split('/').pop() === "Examen.html" && datosAdm === "false") {
       window.location.href = "index.html";
       return;
-    }   
-   if(await verificarConexiónInternet()){ msgError("Hay conexión a internet"); }
+    }
+    //if(await verificarConexiónInternet()){ msgError("Hay conexión a internet"); }    
   }
   catch (e) { msgError(e); }
   finally {    
@@ -81,7 +81,53 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     toggleD('h-cargando', false);
     toggleD('h-menu', true);
-    toggleD('main', true);
+    toggleD('main', true);    
+  }
+    
+  const frmAdminContra = document.getElementById('frmAdmin');
+  alert(frmAdminContra);
+  if (frmAdminContra) {    
+    formulario.addEventListener('submit', async e => {      
+      try {
+        alert("lol1");
+        e.preventDefault();
+        //msgCargando(true);
+
+        // Cerramos el modal de autenticación de forma segura
+        //const modalActual = bootstrap.Modal.getInstance(htmlAdminModal) || new bootstrap.Modal(htmlAdminModal);
+        //const contraerror = document.getElementById('contraerror');
+        //const datosAdm = obtenerDatosAdm();        
+
+        // Añadimos estilos de validación visual de Bootstrap
+        frmAdminContra.classList.add('was-validated');
+        if (!formulario.checkValidity()) {          
+          return;
+        }
+
+        /*if (formulario.checkValidity()) {
+          if (document.getElementById('contra').value === datosAdm.Contra.toString()) {
+            formulario.classList.remove('was-validated');
+            formulario.reset();
+
+            // Cargamos configuraciones y abrimos el segundo modal de pantalla completa
+            modalActual.hide();
+            document.getElementById('primero').value = datosAdm.s100;
+            document.getElementById('segundo').value = datosAdm.s200;
+            document.getElementById('tercero').value = datosAdm.s300;
+            document.getElementById('cuarto').value = datosAdm.s400;
+            document.getElementById('quinto').value = datosAdm.s500;
+            document.getElementById('sexto').value = datosAdm.s600;
+            document.getElementById('menu').checked = datosAdm.Menu;
+            adminModalCfgs.show();
+          }
+          else {
+            formulario.reset();
+          }
+        }*/
+      }
+      catch (e) { msgError("Error al validar contraseña"); }
+      finally { msgCargando(false); }
+    });
   }
 });
 
@@ -91,28 +137,67 @@ function toggleD(comp, show) {
   loader.style.display = show ? "block" : "none";
 }
 
+function generarSem() {
+  const semestres = ['Primero', 'Segundo', 'Tercero', 'Cuarto', 'Quinto', 'Sexto'];
+  const ids = ['s100', 's200', 's300', 's400', 's500', 's600'];
+  
+  const contenedor = document.getElementById('contenedorSem');
+  if (!contenedor) return;
+    
+  contenedor.innerHTML = semestres.map((sem, index) => `
+    <div class="row mb-3">
+      <label for="${ids[index]}" class="sm:col-2 col-form-label">${sem}</label>
+      <div class="sm:col-10">
+        <input type="text" class="form-control" id="${ids[index]}">
+      </div>
+    </div>
+  `).join('');
+}
+
 async function Modals() {
   const footer = document.querySelector('footer');
   if (!footer) return;
 
-  footer.innerHTML = `    
+  footer.innerHTML = `
   <dialog class="dialog" id="adminModal">
     <div class="dialog-header">
       <h1 class="dialog-title">Administración</h1>
       <button type="button" class="btn-close btn-close-n" data-bs-dismiss="dialog" aria-label="Close"></button>
-    </div>
-    <div class="dialog-body">
+    </div>    
+    <form id="frmAdmin" class="vstack gap-3" data-bs-validate novalidate>
+    <div class="dialog-body">      
       <label for="contra" class="col-form-label">Contraseña:</label>
       <input type="password" class="form-control" id="contra" required>
       <div class="invalid-feedback" id="contraerror">
         Por favor, escriba la contraseña correcta.
-      </div>
-    </div>
+      </div>    
+    </div>    
     <div class="dialog-footer">      
-      <button id="btnGuardarAdmin" type="button" class="btn-solid theme-primary">Save changes</button>
+      <button id="btnAdmin" type="button" class="btn-solid theme-primary" data-bs-toggle="dialog">Guardar</button>
     </div>
-  </dialog>  
+    </form>    
+  </dialog>
+
+  <dialog class="dialog dialog-fullscreen dialog-scrollable" id="adminDetalles">
+    <div class="dialog-header">
+      <h1 class="dialog-title">Administración</h1>
+      <button type="button" class="btn-close" data-bs-dismiss="dialog" aria-label="Close"></button>
+    </div>
+    <div class="dialog-body">
+      <form id="formAdminCfgs">
+        <div id="contenedorSem"></div>
+        <div class="form-field">
+          <input type="checkbox" id="checkLabel" class="check" />
+          <label for="checkLabel">Menu Examen</label>
+        </div>          
+      </form>
+    </div>
+    <div class="dialog-footer">
+      <button type="button" class="btn-solid theme-primary" data-bs-dismiss="dialog">Guardar</button>
+    </div>
+  </dialog>
   `;
+  generarSem();
 }
 
 function msgCargando(b) {
@@ -167,5 +252,37 @@ async function llamarAppScript(urlAppScript = null, metodo = 'GET', datosA = nul
   } catch (e) {
     msgError("Error al conectarse con el servidor");
     return null;
+  }
+}
+
+// Verifica si el cliente tiene acceso real a internet.
+async function verificarConexiónInternet() {  
+  // Si el navegador ya detecta que está offline, ahorramos la petición
+  if (!navigator.onLine) return false;
+
+  const controller = new AbortController();
+  const timeoutPromise = new Promise((_, reject) => 
+    setTimeout(() => {
+      controller.abort(); // Cancelamos el fetch pendiente para liberar recursos
+      reject(new Error('Timeout de red'));
+    }, 3000)
+  );
+
+  try {    
+    // Opcional: puedes usar tu propio proxy o un archivo ligero de tu servidor 
+    // en lugar de google.com para evitar bloqueos de red escolar.
+    await Promise.race([
+      fetch('https://www.google.com/favicon.ico', { 
+        mode: 'no-cors', 
+        cache: 'no-store', 
+        signal: controller.signal 
+      }), 
+      timeoutPromise 
+    ]);
+
+    return true;  
+  }
+  catch (error) { 
+    return false; 
   }
 }
