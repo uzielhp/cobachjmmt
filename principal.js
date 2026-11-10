@@ -28,8 +28,8 @@ class HMenu extends HTMLElement {
     <button class="nav-link d-inline-flex gap-2 bg-transparent border-0" data-bs-toggle="menu">        
       <div id="msgC" class="contenedor-logo">
         <span class="d-inline-flex align-items-center">            
-          <img class="logo" src="imgs/logo.png" alt="Logo" style="height: 30px; width: auto;">
           <i class="bi bi-chevron-expand" style="font-size: 1.5rem;"></i>
+          <img class="logo" src="imgs/logo.png" alt="Logo" style="height: 30px; width: auto;">          
         </span>
       </div>
     </button>
@@ -37,7 +37,7 @@ class HMenu extends HTMLElement {
       <img src="imgs/adm.png" alt="Admin" height="35">
     </a>
   </div>
-  <div class="menu">
+  <div class="menu" id="mnExamenes">
     <a class="menu-item" href="200_Act10.html">Actividad 10 Contaminación digital</a>     
     <hr class="menu-divider">
     <a class="menu-item" href="examen.html" data-hoja="s100">Examen 100s</a>
@@ -45,7 +45,7 @@ class HMenu extends HTMLElement {
     <a class="menu-item" href="examen.html" data-hoja="s300">Examen 300s</a>
     <a class="menu-item" href="examen.html" data-hoja="s400">Examen 400s</a>
     <a class="menu-item" href="examen.html" data-hoja="s500">Examen 500s</a>
-    <a id="mnExamenes" class="menu-item" href="examen.html" data-hoja="s600">Examen 600s</a>
+    <a class="menu-item" href="examen.html" data-hoja="s600">Examen 600s</a>
   </div>
   `;
   }
@@ -144,13 +144,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     setTimeout(() => { if (contra) { contra.focus(); } }, 50);
   });
 
-  const menuExamenes = document.getElementById('mnExamenes');
-  menuExamenes.addEventListener('click', (e) => {
-    const enlace = e.target.closest('a[data-hoja]');
-    if (!enlace) return; // Si no hizo clic en un enlace con data-hoja, no hacemos nada
+  const enlaceExamen = document.querySelectorAll('#mnExamenes a[data-hoja]');
+  enlaceExamen.forEach(enlace => {
+    enlace.addEventListener('click', function(evento) {
+      evento.preventDefault();
 
-    const hoja = enlace.dataset.hoja;
-    sessionStorage.setItem('Examen', hoja);
+      const hoja = this.dataset.hoja;
+      sessionStorage.setItem('Examen', hoja);
+
+      const destino = this.getAttribute('href');
+      window.location.href = destino;
+    });
   });
 });
 

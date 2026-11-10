@@ -7,11 +7,10 @@
   <title>COBACH JMMT</title>
   <link rel="icon" type="image/png" href="imgs/favicon.png" />
 
-  <link rel="stylesheet" href="bootstrap.min.css">  
   <link rel="stylesheet" href="bootstrap-icons.min.css">
+  <link rel="stylesheet" href="bootstrap.min.css">
   <link rel="stylesheet" href="principal.css">
 
-  <script src="bootstrap.bundle.min.js"></script>
   <script src="principal.js"></script>
 </head>
 
@@ -39,15 +38,24 @@
             </div>
             <div class="col">
               <div class="row g-3">
-                <div class="col-12">
-                  <label for="grupo" class="form-label fw-bold">Grupo / Turno *</label>
-                  <select id="grupo" name="grupo" required class="form-select">
-                    <option value="" disabled selected>Selecciona tu grupo...</option>
-                    <option value="501M">501M</option>
-                    <option value="502M">502M</option>
-                    <option value="501V">501V</option>
-                    <option value="502V">502V</option>
-                  </select>
+                <div class="col-6">
+                  <div class="form-field">
+                    <label class="form-label" for="grupo">Grupo *</label>
+                    <select class="form-control" required id="grupo">
+                      <option disabled selected>Selecciona tu grupo</option>
+                      <option value="101M">101M</option>
+                      <option value="102M">101M</option>
+                      <option value="104V">104V</option>
+                      <option value="301M">301M</option>
+                      <option value="302M">302M</option>
+                      <option value="301V">301V</option>
+                      <option value="302V">302V</option>
+                      <option value="501M">501M</option>
+                      <option value="502M">502M</option>
+                      <option value="501V">501V</option>
+                      <option value="502V">502V</option>
+                    </select>
+                  </div>                  
                 </div>
                 <div class="col-md-6">
                   <label for="nombres" class="form-label fw-bold">Nombre(s) *</label>
@@ -80,9 +88,12 @@
             </div>
           </div>
         </div>
-        <button type="submit" id="submitBtn" class="btn btn-primary w-100 fw-bold shadow-sm py-3 mt-3 d-none">
-          Enviar mis respuestas <i class="fas fa-paper-plane ms-2"></i>
-        </button>
+        <div class="d-grid gap-2">
+          <button class="btn-solid theme-primary" type="submit">Button</button>
+        </div>
+        <button type="submit" class="btn-solid theme-primary" id="submitBtn">
+          Guardar
+        </button>        
       </form>
     </div>
   </main>
@@ -98,20 +109,15 @@
     // ENVÍO Y PROCESAMIENTO DE RESPUESTAS
     const form = document.getElementById('studentForm');
     const submitBtn = document.getElementById('submitBtn');
-
-    window.addEventListener('DOMContentLoaded', () => {                  
-      cargarPreguntas();
-    });
-
-    async function cargarPreguntas() {      
-      msgCargando(true);      
-      
-      try {       
-        const datosAdm = obtenerDatosAdm(); 
+    
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {        
+        msgCargando(true);
+        const datosAdm = obtenerDatosAdm();
         HOJA = datosAdm[sessionStorage.getItem('Examen')];
-        if (!HOJA) { msgError("Error al conectarse Hoja Semestre"); return; }
+        if (!HOJA) { msgError("Error al conectarse Hoja Semestre"); return; }        
 
-        const data = await llamarAppScript(HOJA);
+        const data = await llamarAppScript(HOJA);        
         
         // Imágenes por examen
         const carpetaImagenes = 'imgs/examen/';
@@ -127,7 +133,7 @@
         let htmlContent = '';
         let numPregunta = 0;
 
-        const inicio = (data.length > 0 && data[0][0].toString().toLowerCase().includes('pregunta')) ? 1 : 0;
+        const inicio = (data.length > 0 && data[0][0].toString().toLowerCase().includes('pregunta')) ? 1 : 0;        
 
         for (let i = inicio; i < data.length; i++) {
           const fila = data[i];
@@ -140,7 +146,7 @@
             respuestasCorrectas['pregunta' + numPregunta] = fila[1].toString().trim().toLowerCase();
           }
 
-          htmlContent += `<div class="mb-4"><p class="fw-bold mb-2">${numPregunta}. ${textoPregunta} *</p>`;
+          htmlContent += `<div class="mb-4"><p class="fw-bold mb-2">${numPregunta}. ${textoPregunta} *</p>`;          
 
           let opcionesTemporales = [];
           for (let j = 2; j < fila.length; j++) {
@@ -164,8 +170,8 @@
                   </div>
                 </div>
               `;
-          }
-          htmlContent += `</div>`;
+          }          
+          htmlContent += `</div>`;          
         }
 
         const container = document.getElementById('preguntasContainer');
@@ -181,10 +187,9 @@
       catch (e) {
         msgError("Error al cargar las preguntas");
       }
-      finally { msgCargando(false); }
-    }
+      finally { msgCargando(false); }      
+    });
 
-    // LÓGICA DEL EXAMEN
     function revolverArreglo(arreglo) {
       for (let i = arreglo.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -192,13 +197,6 @@
       }
       return arreglo;
     }
-
-    document.addEventListener('contextmenu', e => {
-      if (!examenTerminado) {
-        e.preventDefault();
-        msgAlerta('Acción no permitida');
-      }
-    });    
 
     form.addEventListener('submit', async e => {
       e.preventDefault();
@@ -258,6 +256,8 @@
       }
     });
   </script>
+
+  <script type="module" src="bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
