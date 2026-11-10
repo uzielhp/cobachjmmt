@@ -1,9 +1,7 @@
 :root {
   --bg-titulo: #FE6100;
   --bg-texto: var(--bs-secondary-color);
-  /*--bg-obsidian: #121212;*/
   --bg-obsidian: #050507;
-  --transition-smooth: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 h-menu, main {
@@ -12,6 +10,7 @@ h-menu, main {
 
 /*Protección para no seleccionar texto */
 body {
+  margin: 0;
   padding-top: 50px;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -24,34 +23,6 @@ p,
 label,
 span {
   color: var(--bg-texto);
-}
-
-/* Modal.ini */
-.modal-header,
-.modal-body,
-.modal-footer {
-  border: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-.modal-content {
-  padding: 20px !important;
-}
-
-.modal-header {
-  color: var(--bg-titulo);
-}
-
-.modal-body img {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  max-width: 100% !important;
-  max-height: 100% !important;
-  object-fit: contain !important;
-  /* Mantiene la proporción de la foto */
-  border-radius: 0.2rem;
 }
 
 .btn-close-n {
@@ -79,8 +50,6 @@ span {
   transform: scale(1) rotate(90deg);
 }
 
-/* Modal.fin */
-
 @keyframes glow {
 
   0%,
@@ -96,56 +65,6 @@ span {
 .glow {
   animation: glow 2s infinite;
 }
-
-/*.logo {
-  height: 40px;
-  width: auto;
-}*/
-
-/* Botón MENU.ini */
-.custom-toggler:hover i {
-  color: var(--bg-titulo);
-}
-
-/*.nav-item {  
-  border-left: 2px solid var(--bg-titulo);
-  margin-bottom: 5px;
-  padding-left: 10px;
-}*/
-
-/*.nav-link {
-  position: relative;
-  transition: color 0.3s ease;
-  display: inline-flex !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}*/
-
-/*.nav-link:hover,
-.nav-link:focus {
-  color: #ffffff !important;
-}*/
-
-/* Línea naranja para el menú principal */
-/*.nav-link::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 2px;
-  background-color: var(--bg-titulo);
-  transform: scaleX(0);
-  transform-origin: bottom right;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}*/
-
-/* Animación al pasar el mouse en el menú principal */
-/*.nav-link:hover::after,
-.nav-link:focus::after {
-  transform: scaleX(1);
-  transform-origin: bottom left;
-}*/
 
 /* EFECTO LOGO RECARGA */
 .contenedor-logo {

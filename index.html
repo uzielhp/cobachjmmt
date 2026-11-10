@@ -19,39 +19,13 @@
   <h-menu></h-menu>  
 
   <main>
-    <form id="frmAdmin" class="vstack gap-3" data-bs-validate novalidate>
-    <div class="dialog-body">      
-      <label for="contra" class="col-form-label">Contraseña:</label>
-      <input type="password" class="form-control" id="contra" required>
-      <div class="invalid-feedback" id="contraerror">
-        Por favor, escriba la contraseña correcta.
-      </div>    
-    </div>    
-    <div class="dialog-footer">      
-      <button id="btnAdmin" type="button" class="btn-solid theme-primary" data-bs-toggle="dialog">Guardar</button>
-    </div>
-    </form>
-
     <noscript>
       <div class="text-center text-warning p-3">
         La galería requiere JavaScript. Activa JavaScript para ver las imágenes.
       </div>
     </noscript>
     <div class="masonry-grid" id="collage-container"></div>
-  </main>
-  <script>
-    const formulario = document.getElementById('frmAdmin');
-    alert(formulario);
-    if(formulario){
-    formulario.addEventListener('submit', async e => {      
-      try {
-        e.preventDefault();
-        alert("lol1");
-      }
-      catch {}
-    });
-  }
-  </script>
+  </main>  
 
   <footer></footer>
 

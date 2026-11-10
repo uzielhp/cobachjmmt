@@ -5,7 +5,7 @@ let peticionesActivas = 0;
 class HCargando extends HTMLElement {
   connectedCallback() {
   this.innerHTML = `
-  <div class="fixed-top d-flex align-items-center gap-2 justify-content-between w-100 bg-white placeholder-wave" style="height: 50px; padding: 0 5px;">
+  <div class="fixed-top d-flex align-items-center justify-content-between bg-white placeholder-wave" style="height: 50px; padding: 0 5px;">
     <div class="nav-link d-inline-flex gap-2 bg-transparent border-0" data-bs-toggle="menu">        
       <div class="contenedor-logo is-loading">
         <span class="d-inline-flex align-items-center">            
@@ -24,7 +24,7 @@ customElements.define('h-cargando', HCargando);
 class HMenu extends HTMLElement {
   connectedCallback() {
   this.innerHTML = `
-  <div class="fixed-top d-flex align-items-center gap-2 justify-content-between w-100 bg-black" style="height: 50px; padding: 0 5px;">
+  <div class="fixed-top d-flex align-items-center gap-2 justify-content-between bg-black" style="height: 50px; padding: 0 5px;">
     <button class="nav-link d-inline-flex gap-2 bg-transparent border-0" data-bs-toggle="menu">        
       <div id="msgC" class="contenedor-logo">
         <span class="d-inline-flex align-items-center">            
@@ -33,7 +33,7 @@ class HMenu extends HTMLElement {
         </span>
       </div>
     </button>
-    <a href="#" data-bs-toggle="dialog" data-bs-target="#adminModal">
+    <a href="#" id="btnAbrirAdmin">
       <img src="imgs/adm.png" alt="Admin" height="35">
     </a>
   </div>
@@ -53,18 +53,9 @@ class HMenu extends HTMLElement {
 customElements.define('h-menu', HMenu);
 
 document.addEventListener('DOMContentLoaded', async () => {
-  await Modals();
-
-  const menuExamenes = document.getElementById('mnExamenes');
-  menuExamenes.addEventListener('click', (e) => {
-    const enlace = e.target.closest('a[data-hoja]');
-    if (!enlace) return; // Si no hizo clic en un enlace con data-hoja, no hacemos nada
-
-    const hoja = enlace.dataset.hoja;
-    sessionStorage.setItem('Examen', hoja);
-  });
+  await Dialogs();
   
-  try {        
+  try {
     msgCargando(true);
     await llamarDatosAdm();
     const datosAdm = obtenerDatosAdm();
@@ -82,53 +73,85 @@ document.addEventListener('DOMContentLoaded', async () => {
     toggleD('h-cargando', false);
     toggleD('h-menu', true);
     toggleD('main', true);    
-  }
-    
+  }  
+
+  const dlgAdmin = document.getElementById('dialogAdmin');  
+  const contra = document.getElementById('contra');
+  const btnAbrirAdmin = document.getElementById('btnAbrirAdmin');
+  const dlgAdminDetalles = document.getElementById('dialogAdminDetalles');
+  
   const frmAdminContra = document.getElementById('frmAdmin');
-  alert(frmAdminContra);
-  if (frmAdminContra) {    
-    formulario.addEventListener('submit', async e => {      
-      try {
-        alert("lol1");
-        e.preventDefault();
-        //msgCargando(true);
+  frmAdminContra.addEventListener('submit', async e => {      
+    try {      
+      e.preventDefault();
+      msgCargando(true);
 
-        // Cerramos el modal de autenticación de forma segura
-        //const modalActual = bootstrap.Modal.getInstance(htmlAdminModal) || new bootstrap.Modal(htmlAdminModal);
-        //const contraerror = document.getElementById('contraerror');
-        //const datosAdm = obtenerDatosAdm();        
+      if (!frmAdminContra.checkValidity()) { return; }
+      const datosAdm = obtenerDatosAdm();
+      if (contra.value === datosAdm.Contra.toString()) {              
+        dlgAdmin.close();        
 
-        // Añadimos estilos de validación visual de Bootstrap
-        frmAdminContra.classList.add('was-validated');
-        if (!formulario.checkValidity()) {          
-          return;
-        }
+        document.getElementById('s100').value = datosAdm.s100;
+        document.getElementById('s200').value = datosAdm.s200;
+        document.getElementById('s300').value = datosAdm.s300;
+        document.getElementById('s400').value = datosAdm.s400;
+        document.getElementById('s500').value = datosAdm.s500;
+        document.getElementById('s600').value = datosAdm.s600;
+        document.getElementById('menu').checked = datosAdm.Menu;
 
-        /*if (formulario.checkValidity()) {
-          if (document.getElementById('contra').value === datosAdm.Contra.toString()) {
-            formulario.classList.remove('was-validated');
-            formulario.reset();
-
-            // Cargamos configuraciones y abrimos el segundo modal de pantalla completa
-            modalActual.hide();
-            document.getElementById('primero').value = datosAdm.s100;
-            document.getElementById('segundo').value = datosAdm.s200;
-            document.getElementById('tercero').value = datosAdm.s300;
-            document.getElementById('cuarto').value = datosAdm.s400;
-            document.getElementById('quinto').value = datosAdm.s500;
-            document.getElementById('sexto').value = datosAdm.s600;
-            document.getElementById('menu').checked = datosAdm.Menu;
-            adminModalCfgs.show();
-          }
-          else {
-            formulario.reset();
-          }
-        }*/
+        dlgAdminDetalles.showModal();
+        frmAdminContra.reset();
+        contra.classList.remove('is-invalid');
+      }      
+      else{
+        contra.classList.add('is-invalid');
       }
-      catch (e) { msgError("Error al validar contraseña"); }
-      finally { msgCargando(false); }
-    });
-  }
+    }
+    catch (e) { msgError("Error al validar contraseña"); }
+    finally { msgCargando(false); }
+  });
+
+  const frmAdminDetalles = document.getElementById('frmAdminDetalles');
+  frmAdminDetalles.addEventListener('submit', async e => {      
+    try {      
+      e.preventDefault();
+      msgCargando(true);
+      dlgAdminDetalles.close();
+
+      const datosA = {
+        primero: document.getElementById('s100').value,
+        segundo: document.getElementById('s200').value,
+        tercero: document.getElementById('s300').value,
+        cuarto: document.getElementById('s400').value,
+        quinto: document.getElementById('s500').value,
+        sexto: document.getElementById('s600').value,
+        menu: document.getElementById('menu').checked
+      };      
+      const data = await llamarAppScript(null, 'POST', datosA);          
+      if (data.status === 'yes') { 
+        await llamarDatosAdm();
+        msgAlerta("Configuraciones guardadas");        
+      }      
+    }
+    catch (e) { msgError("Error al guardar información"); }
+    finally { msgCargando(false); }
+  });
+
+  btnAbrirAdmin.addEventListener('click', (e) => {
+    e.preventDefault();
+
+    dlgAdmin.showModal();
+    setTimeout(() => { if (contra) { contra.focus(); } }, 50);
+  });
+
+  const menuExamenes = document.getElementById('mnExamenes');
+  menuExamenes.addEventListener('click', (e) => {
+    const enlace = e.target.closest('a[data-hoja]');
+    if (!enlace) return; // Si no hizo clic en un enlace con data-hoja, no hacemos nada
+
+    const hoja = enlace.dataset.hoja;
+    sessionStorage.setItem('Examen', hoja);
+  });
 });
 
 function toggleD(comp, show) {
@@ -154,52 +177,87 @@ function generarSem() {
   `).join('');
 }
 
-async function Modals() {
+async function Dialogs() {
   const footer = document.querySelector('footer');
   if (!footer) return;
 
   footer.innerHTML = `
-  <dialog class="dialog" id="adminModal">
+  <dialog class="dialog" id="dialogAdmin">
     <div class="dialog-header">
       <h1 class="dialog-title">Administración</h1>
       <button type="button" class="btn-close btn-close-n" data-bs-dismiss="dialog" aria-label="Close"></button>
     </div>    
     <form id="frmAdmin" class="vstack gap-3" data-bs-validate novalidate>
-    <div class="dialog-body">      
-      <label for="contra" class="col-form-label">Contraseña:</label>
-      <input type="password" class="form-control" id="contra" required>
-      <div class="invalid-feedback" id="contraerror">
-        Por favor, escriba la contraseña correcta.
+      <div class="dialog-body">      
+        <label for="contra" class="col-form-label">Contraseña:</label>
+        <input type="password" class="form-control" id="contra" required>
+        <div class="invalid-feedback" id="contraerror">
+          Por favor, escriba la contraseña correcta.
+        </div>    
       </div>    
-    </div>    
-    <div class="dialog-footer">      
-      <button id="btnAdmin" type="button" class="btn-solid theme-primary" data-bs-toggle="dialog">Guardar</button>
-    </div>
+      <div class="dialog-footer">      
+        <button type="submit" class="btn-solid theme-primary" id="btnAdmin">Guardar</button>
+      </div>
     </form>    
   </dialog>
 
-  <dialog class="dialog dialog-fullscreen dialog-scrollable" id="adminDetalles">
+  <dialog class="dialog dialog-fullscreen dialog-scrollable" id="dialogAdminDetalles">
     <div class="dialog-header">
       <h1 class="dialog-title">Administración</h1>
-      <button type="button" class="btn-close" data-bs-dismiss="dialog" aria-label="Close"></button>
+      <button type="button" class="btn-close btn-close-n" data-bs-dismiss="dialog" aria-label="Close"></button>
     </div>
-    <div class="dialog-body">
-      <form id="formAdminCfgs">
+    <form id="frmAdminDetalles">
+      <div class="dialog-body">      
         <div id="contenedorSem"></div>
         <div class="form-field">
-          <input type="checkbox" id="checkLabel" class="check" />
-          <label for="checkLabel">Menu Examen</label>
-        </div>          
-      </form>
-    </div>
-    <div class="dialog-footer">
-      <button type="button" class="btn-solid theme-primary" data-bs-dismiss="dialog">Guardar</button>
-    </div>
+          <input type="checkbox" id="menu" class="check" />
+          <label for="menu">Menu Examen</label>
+        </div>      
+      </div>
+      <div class="dialog-footer">
+        <button type="submit" class="btn-solid theme-primary" id="btnAdminDetalles">Guardar</button>
+      </div>
+    </form>
   </dialog>
   `;
   generarSem();
 }
 
+function msgAlerta(message, delay = 3000) {
+  let contenedor = document.getElementById('alerta-container');
+  if (!contenedor) {
+    contenedor = document.createElement('div');
+    contenedor.id = 'alerta-container';
+    contenedor.className = 'position-fixed top-0 end-0 p-3';
+    contenedor.style.zIndex = '1100';
+    contenedor.style.marginTop = '30px';
+    contenedor.style.marginRight = '-12px';
+    document.body.appendChild(contenedor);
+  }
+
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = `
+  <div class="alert alert-dismissible fade show d-inline-flex align-items-center py-1 pe-2 small"
+    style="background-color: var(--bg-titulo);" role="alert">
+    <div class="me-3">${message}</div>
+    <button type="button" class="btn-close" style="position: relative !important; margin-left: auto; padding: 0.5rem;"
+      data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  `;
+
+  contenedor.appendChild(wrapper);
+  const alertaBootstrap = new bootstrap.Alert(wrapper.querySelector('.alert'));
+
+  setTimeout(() => {
+    alertaBootstrap.close();
+    setTimeout(() => { wrapper.remove(); }, 150);
+  }, delay);
+}
+function msgError(mensaje) {
+  let me = document.getElementById('msgError');
+  me.textContent = mensaje;
+  me.style.display = 'block';
+}
 function msgCargando(b) {
   const msgC = document.getElementById('msgC');
 
@@ -236,7 +294,7 @@ async function llamarDatosAdm() {
 async function llamarAppScript(urlAppScript = null, metodo = 'GET', datosA = null){
   try {
     // Codificamos directamente la URL del Apps Script para enviarla de forma segura por GET
-    if (urlAppScript === null) { urlAppScript = "https://script.google.com/macros/s/AKfycbwcZfTNSKYeIWWR1xdeavEMyejaI-YXOP2-Y_pdnTG7RYjbFSgKo4zqLVSNIEjmQ9an/exec"; }
+    if (urlAppScript === null) { urlAppScript = "https://script.google.com/macros/s/AKfycbz0iGDEYGtfo4CPabcbB5WsOVEv40RbIVdz3aJ8ZFckHWVAEKMBb7Cd6YQVo3tMLLeU/exec"; }
     let url = `${CONEXION}?target=${encodeURIComponent(urlAppScript)}`;
     
     const opciones = { method: metodo, cache: 'no-store' };
