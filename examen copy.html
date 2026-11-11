@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COBACH JMMT</title>
+  <link rel="icon" type="image/png" href="imgs/favicon.png" />
+
+  <link rel="stylesheet" href="bootstrap-icons.min.css">
+  <link rel="stylesheet" href="bootstrap.min.css">
+  <link rel="stylesheet" href="principal.css">
+
+  <script src="principal.js"></script>
+</head>
+
+<body>
+  <h-cargando></h-cargando>
+  <h-menu></h-menu>
+
+  <main>
+    <div class="container">
+      <div class="text-center mb-4">
+        <h1>Examen</h1>
+        <p>
+          Por favor, completa tus datos y responde las preguntas.
+        </p>        
+      </div>    
+
+      <form id="studentForm" class="card-body pb-2 md-4" data-bs-validate novalidate>
+        <!-- Datos del Alumno -->
+        <div class="container mb-3 border rounded p-3">
+          <div class="row row-cols-1">
+            <div class="col">
+              <h5 class="pb-2" style="color: var(--bg-titulo);">
+                <i class="bi bi-mortarboard-fill"></i> Datos del Alumno
+              </h5>
+            </div>
+            <div class="col">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="form-field">
+                    <label class="form-label" for="grupo">Grupo *</label>
+                    <select class="form-control" required id="grupo" name="grupo">
+                      <option value="" disabled selected>Grupo y turno</option>
+                      <option value="101M">101M</option>
+                      <option value="102M">101M</option>
+                      <option value="104V">104V</option>
+                      <option value="301M">301M</option>
+                      <option value="302M">302M</option>
+                      <option value="301V">301V</option>
+                      <option value="302V">302V</option>
+                      <option value="501M">501M</option>
+                      <option value="502M">502M</option>
+                      <option value="501V">501V</option>
+                      <option value="502V">502V</option>
+                    </select>
+                  </div>                  
+                </div>
+                <div class="col-md-6">
+                  <label for="nombres" class="form-label fw-bold">Nombre(s) *</label>
+                  <input type="text" id="nombres" name="nombres" required placeholder="Ej. María Fernanda"
+                    class="form-control">
+                </div>
+                <div class="col-md-6">
+                  <label for="apellidos" class="form-label fw-bold">Apellidos *</label>
+                  <input type="text" id="apellidos" name="apellidos" required placeholder="Ej. Pérez Gómez"
+                    class="form-control">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Datos de Preguntas -->
+        <div class="container mb-3 border rounded p-3">
+          <div class="row row-cols-1">
+            <div class="col">
+              <h5 class="pb-2" style="color: var(--bg-titulo);">
+                <i class="bi bi-patch-question-fill"></i> Preguntas
+              </h5>
+            </div>
+            <div class="col-12">
+              <div id="imagenesContainer" class="w-100 mb-3"></div>
+            </div>
+            <div class="col">
+              <div id="preguntasContainer"></div>
+            </div>
+          </div>
+        </div>
+        <button class="btn-solid theme-primary w-100 p-3" type="submit" id="submitBtn">Guardar</button>
+      </form>
+    </div>
+  </main>
+
+  <footer></footer>
+
+  <script>
+    // VARIABLES DE CONTROL Y ESTADO GLOBAL
+    let modalsaliste = null;
+    let respuestasCorrectas = {};
+    let examenTerminado = true;
+    let HOJA = "";    
+    // ENVÍO Y PROCESAMIENTO DE RESPUESTAS
+    const form = document.getElementById('studentForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {        
+        msgCargando(true);
+        const datosAdm = obtenerDatosAdm();
+        HOJA = datosAdm[sessionStorage.getItem('Examen')];
+        if (!HOJA) { msgError("Error al conectarse Hoja Semestre"); return; }        
+
+        const data = await llamarAppScript(HOJA);        
+        
+        // Imágenes por examen
+        const carpetaImagenes = 'imgs/examen/';
+        let htmlImagenes = '';                
+        for (let i = 1; i <= datosAdm.Imagenes; i++) {
+          const rutaJpg = `${carpetaImagenes}${i}.jpg`;
+          htmlImagenes += `
+            <img src="${rutaJpg}" class="img-fluid w-100 rounded shadow-sm mb-3" alt="Imagen ${i}" onerror="this.style.display='none'">
+          `;
+        }
+        document.getElementById('imagenesContainer').innerHTML = htmlImagenes;        
+
+        let htmlContent = '';
+        let numPregunta = 0;
+
+        const inicio = (data.length > 0 && data[0][0].toString().toLowerCase().includes('pregunta')) ? 1 : 0;        
+
+        for (let i = inicio; i < data.length; i++) {
+          const fila = data[i];
+          if (!fila[0]) continue;
+
+          numPregunta++;
+          const textoPregunta = fila[0];
+
+          if (fila[1]) {
+            respuestasCorrectas['pregunta' + numPregunta] = fila[1].toString().trim().toLowerCase();
+          }
+          
+          htmlContent += `
+          <div class="py-4 border-bottom border-secondary-subtle">
+            <h5 class="fs-5 fw-normal mb-3" style="color: var(--bg-titulo);">${numPregunta}. ${textoPregunta} *</h5>
+          `;
+          let opcionesTemporales = [];
+          for (let j = 2; j < fila.length; j++) {
+            if (fila[j]) opcionesTemporales.push(fila[j]);
+          }
+
+          opcionesTemporales = revolverArreglo(opcionesTemporales);
+
+          htmlContent += `
+            <div class="form-group d-flex flex-wrap align-items-center gap-4">
+          `;
+          let numOpcion = 0;
+          for (let k = 0; k < opcionesTemporales.length; k++) {
+            const textoOpcion = opcionesTemporales[k];
+            numOpcion++;
+            const idOpcion = `p${numPregunta}_o${numOpcion}`;
+            const valorSeguro = textoOpcion.toString().replace(/"/g, '&quot;');
+            htmlContent +=`
+              <div class="form-field">
+                <input class="radio" type="radio" name="pregunta${numPregunta}" id="${idOpcion}" value="${valorSeguro}" required>                
+                <label for="${idOpcion}">${textoOpcion}</label>                
+              </div>
+            `;
+          }
+          htmlContent += `                
+            </div>
+          </div>
+          `;
+        }
+
+        const container = document.getElementById('preguntasContainer');
+        if (htmlContent) {
+          container.innerHTML = htmlContent;
+          document.getElementById('submitBtn').classList.remove('d-none');
+          examenTerminado = false;
+        }
+        else {
+          msgError("Error al cargar las preguntas (No hay ninguna)");
+        }
+      }
+      catch (e) {
+        msgError("Error al cargar las preguntas");
+      }
+      finally { msgCargando(false); }      
+    });
+
+    function revolverArreglo(arreglo) {
+      for (let i = arreglo.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arreglo[i], arreglo[j]] = [arreglo[j], arreglo[i]];
+      }
+      return arreglo;
+    }
+
+    form.addEventListener('submit', async e => {      
+      try {
+        e.preventDefault();
+        msgCargando(true);
+        if (!form.checkValidity()) {
+          const primerError = form.querySelector(':invalid');
+          if (primerError) {
+            primerError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          return; 
+        }        
+      }
+      catch{}
+      /*if (!form.checkValidity()) {
+        e.stopPropagation();
+        form.classList.add('was-validated');
+        const primerError = form.querySelector(':invalid');
+        if (primerError) {
+          primerError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+      }*/
+
+      /*msgCargando(true);
+      try {
+        submitBtn.classList.add('d-none');
+        msgError("Guardando y calificando...");
+
+        const formData = new FormData(form);
+        let aciertos = 0;
+
+        for (const [preguntaKey, respuestaCorrecta] of Object.entries(respuestasCorrectas)) {
+          const respuestaAlumno = formData.get(preguntaKey);
+          if (respuestaAlumno && respuestaAlumno.toString().trim().toLowerCase() === respuestaCorrecta) {
+            aciertos++;
+            formData.append('eval_' + preguntaKey, 'correcta');
+          } else {
+            formData.append('eval_' + preguntaKey, 'incorrecta');
+          }
+        }
+
+        formData.append('vecesSalio', vecesSalio);
+        formData.append('totalCorrectas', aciertos);
+
+        // CAMBIO: En lugar de enviar directo a Google con 'no-cors', 
+        // enviamos los datos a un endpoint de tu servidor para que este los reenvíe a Google.
+        const objetoDatos = Object.fromEntries(formData.entries());
+
+        await fetch('/api/enviar-examen', { 
+          method: 'POST', 
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(objetoDatos) 
+        });
+
+        examenTerminado = true;
+        msgError("¡Tus respuestas se han guardado! Examen finalizado");
+        sessionStorage.removeItem('vecesSalio');
+
+        const inputs = form.querySelectorAll('input, select, button');
+        inputs.forEach(input => input.disabled = true);
+      } catch (e) {
+        msgError('Error al guardar las respuestas');
+      } finally {
+        submitBtn.classList.remove('d-none');
+        msgCargando(false);
+      }*/
+    });
+  </script>
+
+  <script type="module" src="bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

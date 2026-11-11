@@ -4,7 +4,6 @@
   function ejecutarProxyDinamico() {
       header('Content-Type: application/json; charset=utf-8');
 
-      // Capturamos la URL que viene en el parámetro ?target= desde JavaScript
       $googleScriptUrl = $_GET['target'] ?? '';
 
       if (empty($googleScriptUrl)) {
@@ -12,7 +11,6 @@
           return;
       }
 
-      // Excluimos 'target' de los parámetros que se van a reenviar a Google
       $params = $_GET;
       unset($params['target']);
       $queryString = http_build_query($params);
@@ -23,6 +21,9 @@
       curl_setopt($ch, CURLOPT_URL, $urlDestino);
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
       curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+      
+      // LÍNEA CLAVE: Evita que cURL pierda el POST y el cuerpo al seguir la redirección 302 de Google
+      curl_setopt($ch, CURLOPT_POSTREDIR, 7);
 
       if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           curl_setopt($ch, CURLOPT_POST, true);

@@ -55,10 +55,10 @@ customElements.define('h-menu', HMenu);
 document.addEventListener('DOMContentLoaded', async () => {
   await Dialogs();
   
-  try {
+  try {    
     msgCargando(true);
     await llamarDatosAdm();
-    const datosAdm = obtenerDatosAdm();
+    const datosAdm = obtenerDatosAdm();    
     mnExamenes.style.visibility = (datosAdm.Menu === true) ? 'visible' : 'hidden';
     if (window.location.pathname.split('/').pop() === "Examen.html" && datosAdm === "false") {
       window.location.href = "index.html";
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     //if(await verificarConexiónInternet()){ msgError("Hay conexión a internet"); }    
   }
-  catch (e) { msgError(e); }
+  catch (e) { msgError("Error en cargar página"); }
   finally {    
     msgCargando(false);
 
@@ -182,11 +182,11 @@ function generarSem() {
 }
 
 async function Dialogs() {
-  const footer = document.querySelector('footer');
-  if (!footer) return;
+  if (document.getElementById('dialogAdmin')) return;
 
-  footer.innerHTML = `
-  <dialog class="dialog" id="dialogAdmin">
+  const modalContainer = document.createElement('div');
+  modalContainer.innerHTML = `
+  <dialog class="dialog" id="dialogAdmin" style="display: none;">
     <div class="dialog-header">
       <h1 class="dialog-title">Administración</h1>
       <button type="button" class="btn-close btn-close-n" data-bs-dismiss="dialog" aria-label="Close"></button>
@@ -205,7 +205,7 @@ async function Dialogs() {
     </form>    
   </dialog>
 
-  <dialog class="dialog dialog-fullscreen dialog-scrollable" id="dialogAdminDetalles">
+  <dialog class="dialog dialog-fullscreen dialog-scrollable" id="dialogAdminDetalles" style="display: none;">
     <div class="dialog-header">
       <h1 class="dialog-title">Administración</h1>
       <button type="button" class="btn-close btn-close-n" data-bs-dismiss="dialog" aria-label="Close"></button>
@@ -224,7 +224,33 @@ async function Dialogs() {
     </form>
   </dialog>
   `;
+
+  document.body.appendChild(modalContainer);
   generarSem();
+
+  // Forzamos a que el navegador quite el display: none en cuanto se abran con .showModal()
+  const dialogs = modalContainer.querySelectorAll('dialog');
+  dialogs.forEach(dlg => {
+    // Al usar showModal(), el navegador los pasa automáticamente a la capa superior
+    const originalShowModal = dlg.showModal;
+    dlg.showModal = function() {
+      this.style.display = 'block';
+      originalShowModal.call(this);
+    };
+    
+    // Al cerrar, volvemos a ocultarlos del flujo
+    dlg.addEventListener('close', () => {
+      this.style.display = 'none';
+    });
+  });
+  
+  const footer = document.querySelector('footer');
+  if (!footer) return;
+
+  document.body.style.paddingBottom = '40px';
+  footer.innerHTML = `
+  <div id="msgError" class="text-center py-2 position-fixed bottom-0 start-0 w-100 text-white fw-medium shadow" style="display: none; background-color: var(--bg-titulo); z-index: 1060;"></div>
+  `;
 }
 
 function msgAlerta(message, delay = 3000) {
@@ -311,7 +337,101 @@ async function llamarAppScript(urlAppScript = null, metodo = 'GET', datosA = nul
     const response = await fetch(url, opciones);
     const data = await response.json(); 
     return data; 
-  } catch (e) {
+  } 
+  catch (e) {
+    msgError("Error al conectarse con el servidor");
+    return null;
+  }
+}
+
+/*async function llamarHojaExamen(hoja = null, metodo = 'GET', datosA = null) {
+  try {
+    const urlAppScript = "https://script.google.com/macros/s/AKfycbxuSiRSdg-q2rU_QOHCF__NMPltqdSdLAt7WJ6NAEoD7oy46bE_gkHBu5XrYRzvpDN7/exec";
+    
+    let url = `${CONEXION}?target=${encodeURIComponent(urlAppScript)}`;
+
+    // Extraemos el ID limpio si por error pasaste la URL completa de Google Sheets
+    let spreadsheetId = hoja;
+    if (spreadsheetId && spreadsheetId.includes('docs.google.com/spreadsheets/d/')) {
+      const match = spreadsheetId.match(/\/d\/([a-zA-Z0-9-_]+)/);
+      if (match && match[1]) {
+        spreadsheetId = match[1];
+      }
+    }
+
+    if (metodo === 'GET' && spreadsheetId) {
+      url += `&spreadsheetId=${encodeURIComponent(spreadsheetId)}`;
+    }
+
+    const opciones = { method: metodo, cache: 'no-store' };
+
+    if (metodo === 'POST') {
+      opciones.headers = { 'Content-Type': 'application/json' };
+      
+      let payload = datosA || {};
+      if (spreadsheetId) {
+        payload.spreadsheetId = spreadsheetId; // Enviamos únicamente el ID limpio al servidor
+      }
+      opciones.body = JSON.stringify(payload);
+    }
+
+    const response = await fetch(url, opciones);
+    const textResponse = await response.text();
+
+    try {
+      return JSON.parse(textResponse);
+    } catch (err) {
+      console.error("El servidor devolvió HTML en lugar de JSON:", textResponse);
+      msgError("Error: Verifica que el enlace de la hoja de cálculo sea válido.");
+      return { status: 'error' };
+    }
+  } 
+  catch (e) {
+    msgError("Error al conectarse con el servidor");
+    return null;
+  }
+}*/
+
+async function llamarHojaExamen(hoja = null, metodo = 'GET', datosA = null) {
+  try {
+    // La URL de tu Web App de Apps Script configurada internamente
+    const urlAppScript = "https://script.google.com/macros/s/AKfycbxuSiRSdg-q2rU_QOHCF__NMPltqdSdLAt7WJ6NAEoD7oy46bE_gkHBu5XrYRzvpDN7/exec";
+    
+    let url = `${CONEXION}?target=${encodeURIComponent(urlAppScript)}`;
+
+    // Si pasaron una hoja y el método es GET, la adjuntamos a la URL
+    if (metodo === 'GET' && hoja) {
+      url += `&spreadsheetId=${encodeURIComponent(hoja)}`;
+    }
+
+    const opciones = { method: metodo, cache: 'no-store' };
+
+    if (metodo === 'POST') {
+      opciones.headers = { 'Content-Type': 'application/json' };
+      
+      // Preparamos el cuerpo y le inyectamos automáticamente el spreadsheetId si fue proporcionado
+      let payload = datosA || {};
+      if (hoja) {
+        payload.spreadsheetId = hoja;
+      }
+      opciones.body = JSON.stringify(payload);
+    }
+
+    const response = await fetch(url, opciones);
+    /*const data = await response.json(); 
+    return data;*/
+    // Capturamos el texto crudo para ver qué responde el servidor
+    const textResponse = await response.text();
+    console.log("Respuesta del servidor:", textResponse);
+    try {
+      return JSON.parse(textResponse);
+    } catch (err) {
+      console.error("El servidor no devolvió un JSON válido:", textResponse);
+      msgError("Error: El servidor no devolvió un JSON válido");
+      return { status: 'error', message: textResponse };
+    }
+  } 
+  catch (e) {
     msgError("Error al conectarse con el servidor");
     return null;
   }
