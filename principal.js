@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!frmAdminContra.checkValidity()) { return; }
       const datosAdm = obtenerDatosAdm();
       if (contra.value === datosAdm.Contra.toString()) {              
-        dlgAdmin.close();        
+        dlgAdmin.close();
 
         document.getElementById('s100').value = datosAdm.s100;
         document.getElementById('s200').value = datosAdm.s200;
@@ -111,8 +111,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     finally { msgCargando(false); }
   });
 
-  const frmAdminDetalles = document.getElementById('frmAdminDetalles');
-  frmAdminDetalles.addEventListener('submit', async e => {      
+  //const frmAdminDetalles = document.getElementById('frmAdminDetalles');
+  //frmAdminDetalles.addEventListener('submit', async e => {      
+  const btnAdminDetallesAction = document.getElementById('btnAdminDetalles');
+  btnAdminDetallesAction.addEventListener('click', async e => {
     try {      
       e.preventDefault();
       msgCargando(true);
@@ -126,8 +128,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         quinto: document.getElementById('s500').value,
         sexto: document.getElementById('s600').value,
         menu: document.getElementById('menu').checked
-      };      
-      const data = await llamarAppScript(null, 'POST', datosA);          
+      };            
+      const data = await llamarAppScript('POST', datosA);
       if (data.status === 'yes') { 
         await llamarDatosAdm();
         msgAlerta("Configuraciones guardadas");        
@@ -175,7 +177,7 @@ function generarSem() {
     <div class="row mb-3">
       <label for="${ids[index]}" class="sm:col-2 col-form-label">${sem}</label>
       <div class="sm:col-10">
-        <input type="text" class="form-control" id="${ids[index]}">
+        <input type="text" class="form-control" id="${ids[index]}" autocomplete="off">
       </div>
     </div>
   `).join('');
@@ -191,10 +193,10 @@ async function Dialogs() {
       <h1 class="dialog-title">Administración</h1>
       <button type="button" class="btn-close btn-close-n" data-bs-dismiss="dialog" aria-label="Close"></button>
     </div>    
-    <form id="frmAdmin" class="vstack gap-3" data-bs-validate novalidate>
+    <form id="frmAdmin" class="vstack gap-3" autocomplete="off" data-bs-validate novalidate>
       <div class="dialog-body">      
         <label for="contra" class="col-form-label">Contraseña:</label>
-        <input type="password" class="form-control" id="contra" required>
+        <input type="password" class="form-control" id="contra" autocomplete="off" required>
         <div class="invalid-feedback" id="contraerror">
           Por favor, escriba la contraseña correcta.
         </div>    
@@ -210,7 +212,11 @@ async function Dialogs() {
       <h1 class="dialog-title">Administración</h1>
       <button type="button" class="btn-close btn-close-n" data-bs-dismiss="dialog" aria-label="Close"></button>
     </div>
-    <form id="frmAdminDetalles">
+    <form id="frmAdminDetalles" autocomplete="off">
+      <!-- TRUCO: Campos trampa ocultos para despistar al administrador de contraseñas del navegador -->
+      <input type="text" name="user_dummy" style="display:none" autocomplete="username">
+      <input type="password" name="password_dummy" style="display:none" autocomplete="current-password">
+
       <div class="dialog-body">      
         <div id="contenedorSem"></div>
         <div class="form-field">
@@ -234,13 +240,13 @@ async function Dialogs() {
     // Al usar showModal(), el navegador los pasa automáticamente a la capa superior
     const originalShowModal = dlg.showModal;
     dlg.showModal = function() {
-      this.style.display = 'block';
-      originalShowModal.call(this);
+      dlg.style.display = 'block';
+      originalShowModal.call(dlg);
     };
     
     // Al cerrar, volvemos a ocultarlos del flujo
     dlg.addEventListener('close', () => {
-      this.style.display = 'none';
+      dlg.style.display = 'none';
     });
   });
   
@@ -260,7 +266,7 @@ function msgAlerta(message, delay = 3000) {
     contenedor.id = 'alerta-container';
     contenedor.className = 'position-fixed top-0 end-0 p-3';
     contenedor.style.zIndex = '1100';
-    contenedor.style.marginTop = '30px';
+    contenedor.style.marginTop = '50px';
     contenedor.style.marginRight = '-12px';
     document.body.appendChild(contenedor);
   }
@@ -276,11 +282,15 @@ function msgAlerta(message, delay = 3000) {
   `;
 
   contenedor.appendChild(wrapper);
-  const alertaBootstrap = new bootstrap.Alert(wrapper.querySelector('.alert'));
 
   setTimeout(() => {
-    alertaBootstrap.close();
-    setTimeout(() => { wrapper.remove(); }, 150);
+    const alertEl = wrapper.querySelector('.alert');
+    if (alertEl) {
+      alertEl.classList.remove('show');
+      setTimeout(() => { wrapper.remove(); }, 150);
+    } else {
+      wrapper.remove();
+    }
   }, delay);
 }
 function msgError(mensaje) {
@@ -321,22 +331,19 @@ async function llamarDatosAdm() {
   }
 }
 
-async function llamarAppScript(urlAppScript = null, metodo = 'GET', datosA = null){
-  try {
+async function llamarAppScript(metodo = 'GET', datosA = null){
+  try {        
     // Codificamos directamente la URL del Apps Script para enviarla de forma segura por GET
-    if (urlAppScript === null) { urlAppScript = "https://script.google.com/macros/s/AKfycbz0iGDEYGtfo4CPabcbB5WsOVEv40RbIVdz3aJ8ZFckHWVAEKMBb7Cd6YQVo3tMLLeU/exec"; }
-    let url = `${CONEXION}?target=${encodeURIComponent(urlAppScript)}`;
-    
+    const urlAppScript = "https://script.google.com/macros/s/AKfycbz0iGDEYGtfo4CPabcbB5WsOVEv40RbIVdz3aJ8ZFckHWVAEKMBb7Cd6YQVo3tMLLeU/exec";
+    let url = `${CONEXION}?target=${encodeURIComponent(urlAppScript)}`;    
     const opciones = { method: metodo, cache: 'no-store' };
 
     if (metodo === 'POST' && datosA) {
       opciones.headers = { 'Content-Type': 'application/json' };
       opciones.body = JSON.stringify(datosA);
     }
-
     const response = await fetch(url, opciones);
-    const data = await response.json(); 
-    return data; 
+    return await response.json();    
   } 
   catch (e) {
     msgError("Error al conectarse con el servidor");
@@ -344,62 +351,12 @@ async function llamarAppScript(urlAppScript = null, metodo = 'GET', datosA = nul
   }
 }
 
-/*async function llamarHojaExamen(hoja = null, metodo = 'GET', datosA = null) {
-  try {
-    const urlAppScript = "https://script.google.com/macros/s/AKfycbxuSiRSdg-q2rU_QOHCF__NMPltqdSdLAt7WJ6NAEoD7oy46bE_gkHBu5XrYRzvpDN7/exec";
-    
-    let url = `${CONEXION}?target=${encodeURIComponent(urlAppScript)}`;
-
-    // Extraemos el ID limpio si por error pasaste la URL completa de Google Sheets
-    let spreadsheetId = hoja;
-    if (spreadsheetId && spreadsheetId.includes('docs.google.com/spreadsheets/d/')) {
-      const match = spreadsheetId.match(/\/d\/([a-zA-Z0-9-_]+)/);
-      if (match && match[1]) {
-        spreadsheetId = match[1];
-      }
-    }
-
-    if (metodo === 'GET' && spreadsheetId) {
-      url += `&spreadsheetId=${encodeURIComponent(spreadsheetId)}`;
-    }
-
-    const opciones = { method: metodo, cache: 'no-store' };
-
-    if (metodo === 'POST') {
-      opciones.headers = { 'Content-Type': 'application/json' };
-      
-      let payload = datosA || {};
-      if (spreadsheetId) {
-        payload.spreadsheetId = spreadsheetId; // Enviamos únicamente el ID limpio al servidor
-      }
-      opciones.body = JSON.stringify(payload);
-    }
-
-    const response = await fetch(url, opciones);
-    const textResponse = await response.text();
-
-    try {
-      return JSON.parse(textResponse);
-    } catch (err) {
-      console.error("El servidor devolvió HTML en lugar de JSON:", textResponse);
-      msgError("Error: Verifica que el enlace de la hoja de cálculo sea válido.");
-      return { status: 'error' };
-    }
-  } 
-  catch (e) {
-    msgError("Error al conectarse con el servidor");
-    return null;
-  }
-}*/
-
 async function llamarHojaExamen(hoja = null, metodo = 'GET', datosA = null) {
   try {
-    // La URL de tu Web App de Apps Script configurada internamente
     const urlAppScript = "https://script.google.com/macros/s/AKfycbxuSiRSdg-q2rU_QOHCF__NMPltqdSdLAt7WJ6NAEoD7oy46bE_gkHBu5XrYRzvpDN7/exec";
     
     let url = `${CONEXION}?target=${encodeURIComponent(urlAppScript)}`;
 
-    // Si pasaron una hoja y el método es GET, la adjuntamos a la URL
     if (metodo === 'GET' && hoja) {
       url += `&spreadsheetId=${encodeURIComponent(hoja)}`;
     }
@@ -418,18 +375,7 @@ async function llamarHojaExamen(hoja = null, metodo = 'GET', datosA = null) {
     }
 
     const response = await fetch(url, opciones);
-    /*const data = await response.json(); 
-    return data;*/
-    // Capturamos el texto crudo para ver qué responde el servidor
-    const textResponse = await response.text();
-    console.log("Respuesta del servidor:", textResponse);
-    try {
-      return JSON.parse(textResponse);
-    } catch (err) {
-      console.error("El servidor no devolvió un JSON válido:", textResponse);
-      msgError("Error: El servidor no devolvió un JSON válido");
-      return { status: 'error', message: textResponse };
-    }
+    return await response.json();    
   } 
   catch (e) {
     msgError("Error al conectarse con el servidor");

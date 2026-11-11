@@ -7,11 +7,10 @@
   <title>COBACH JMMT</title>
   <link rel="icon" type="image/png" href="imgs/favicon.png" />
 
-  <link rel="stylesheet" href="bootstrap.min.css">  
   <link rel="stylesheet" href="bootstrap-icons.min.css">
+  <link rel="stylesheet" href="bootstrap.min.css">
   <link rel="stylesheet" href="principal.css">
 
-  <script src="bootstrap.bundle.min.js"></script>
   <script src="principal.js"></script>
 </head>
 
@@ -20,55 +19,46 @@
   <h-menu></h-menu>
 
   <main>
+    <div class="container text-center mb-4">
+      <div class="row mb-4">
+        <div class="col-12">
+          <h3>El Peso Invisible de tu Internet</h3>
+          <p>¿Sabías que el internet contamina? Todo lo que hacemos en línea requiere servidores físicos que consumen
+          enormes cantidades de electricidad y agua a nivel mundial.</p>
+        </div>
+      </div>
+      <div class="row row-cols-1 md:row-cols-3 g-3">
+        <div class="col">
+          <div class="border rounded p-3 h-100">
+            <i class="bi bi-envelope-paper-fill h1" style="color: var(--bg-titulo);"></i>
+            <h4 style="color: var(--bg-titulo);">Correos Olvidados</h4>
+            <p class="mb-0">Esos boletines y correos antiguos que nunca borras ocupan espacio en servidores que están encendidos día
+            y noche. ¡Borrarlos es como apagar un foco que nadie usa!</p>
+          </div>
+        </div>
+        <div class="col">
+          <div class="border rounded p-3 h-100">
+            <i class="bi bi-play-btn-fill h1" style="color: var(--bg-titulo);"></i>
+            <h4 style="color: var(--bg-titulo);">Streaming y Redes</h4>
+            <p class="mb-0">Ver Netflix, YouTube o deslizar horas en TikTok es lo que más contamina. El video es muy "pesado" y
+            moverlo por la red requiere mucha energía.</p>
+          </div>
+        </div>
+        <div class="col">
+          <div class="border rounded p-3 h-100">
+            <i class="bi bi-cloud-arrow-up-fill h1" style="color: var(--bg-titulo);"></i>
+            <h4 style="color: var(--bg-titulo);">La Nube Infinita</h4>
+            <p class="mb-0">Google Drive, iCloud... Guardamos fotos borrosas "por si acaso". Ese almacenamiento infinito requiere
+            discos duros reales consumiendo luz real.</p>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="container">
-      <div class="text-center mb-4">
-        <h1 class="h2">El Peso Invisible de tu Internet</h1>
-        <p class="lead fs-6">
-          ¿Sabías que el internet contamina? Todo lo que hacemos en línea requiere servidores físicos que consumen
-          enormes cantidades de electricidad y agua a nivel mundial.
-        </p>
-      </div>
-
-      <div class="row g-3 mb-4 text-center">
-        <div class="col-12 col-md-4">
-          <div class="border rounded p-3 h-100">
-            <i class="bi bi-envelope-paper-fill fs-1 text-primary" aria-hidden="true"></i>
-            <h2 class="h5 pb-2" style="color: var(--bg-titulo);">Correos Olvidados</h2>
-            <p class="small mb-0">
-              Esos boletines y correos antiguos que nunca borras ocupan espacio en servidores que están encendidos día
-              y noche. ¡Borrarlos es como apagar un foco que nadie usa!
-            </p>
-          </div>
-        </div>
-        <div class="col-12 col-md-4">
-          <div class="border rounded p-3 h-100">
-            <i class="bi bi-play-btn-fill fs-1 text-danger" aria-hidden="true"></i>
-            <h2 class="h5 pb-2" style="color: var(--bg-titulo);">Streaming y Redes</h2>
-            <p class="small mb-0">
-              Ver Netflix, YouTube o deslizar horas en TikTok es lo que más contamina. El video es muy "pesado" y
-              moverlo por la red requiere mucha energía.
-            </p>
-          </div>
-        </div>
-        <div class="col-12 col-md-4">
-          <div class="border rounded p-3 h-100">
-            <i class="bi bi-cloud-arrow-up-fill fs-1 text-info" aria-hidden="true"></i>
-            <h2 class="h5 pb-2" style="color: var(--bg-titulo);">La Nube Infinita</h2>
-            <p class="small mb-0">
-              Google Drive, iCloud... Guardamos fotos borrosas "por si acaso". Ese almacenamiento infinito requiere
-              discos duros reales consumiendo luz real.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div class="border rounded p-3 mb-4">
-        <h2 class="h4 fw-bold mb-4 d-flex align-items-center gap-2" style="color: var(--bg-titulo);">
-          <i class="bi bi-calculator" aria-hidden="true"></i> Calcula tu Huella Digital Anual
-        </h2>
-        <div class="row g-4">
-          <div class="col-12 col-md-6 d-flex flex-column justify-content-center gap-4">
-            <div>
+      <div class="row row-cols-1 md:row-cols-2 g-3 align-items-stretch">
+        <div class="col">
+          <div class="border rounded p-3 h-100 d-flex flex-column justify-content-around">
+            <div class="mb-3">
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <label for="input-emails" class="fw-medium">
                   <i class="bi bi-envelope me-1" aria-hidden="true"></i> Correos inútiles
@@ -77,8 +67,7 @@
               </div>
               <input type="range" class="form-range" id="input-emails" min="0" max="10000" step="50" value="500">
             </div>
-
-            <div>
+            <div class="mb-3">
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <label for="input-streaming" class="fw-medium">
                   <i class="bi bi-play-circle me-1" aria-hidden="true"></i> Horas de video/día
@@ -87,8 +76,7 @@
               </div>
               <input type="range" class="form-range" id="input-streaming" min="0" max="12" step="0.5" value="2">
             </div>
-
-            <div>
+            <div class="mb-0">
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <label for="input-cloud" class="fw-medium">
                   <i class="bi bi-cloud me-1" aria-hidden="true"></i> Gigas en la nube
@@ -98,44 +86,41 @@
               <input type="range" class="form-range" id="input-cloud" min="0" max="500" step="5" value="15">
             </div>
           </div>
-
-          <div class="col-12 col-md-6">
-            <div class="border rounded text-center p-3 h-100">
-              <div class="h6 fw-bold">Tu huella de carbono digital genera:</div>
-              <div class="display-3 fw-bold my-2 text-primary" id="total-co2">0.0</div>
-              <div class="h6 fw-bold mb-4">kg de CO2/año</div>
-
-              <div class="row g-3">
-                <div class="col-6">
-                  <div class="border rounded p-3 h-100">
-                    <i class="bi bi-tree-fill fs-3 d-block mb-1 text-success" aria-hidden="true"></i>
-                    <span class="fs-4 fw-bold d-block" id="trees-needed">0</span>
-                    <small class="text-muted d-block" style="font-size: 0.75rem;">Árboles necesarios al año</small>
-                  </div>
-                </div>
-                <div class="col-6">
-                  <div class="border rounded p-3 h-100">
-                    <i class="bi bi-car-front-fill fs-3 d-block mb-1 text-warning" aria-hidden="true"></i>
-                    <span class="fs-4 fw-bold d-block" id="car-km">0</span>
-                    <small class="text-muted d-block" style="font-size: 0.75rem;">Km en coche de gasolina</small>
-                  </div>
-                </div>
+        </div>
+        <div class="col border rounded p-3 text-center">
+          <i class="bi bi-calculator h1" style="color: var(--bg-titulo);"></i> 
+          <h4 style="color: var(--bg-titulo);">Calcula tu Huella Digital Anual</h4>          
+          <div class="h6 fw-bold">Tu huella de carbono digital genera:</div>
+          <div class="display-3 fw-bold my-2 text-primary" id="total-co2">0.0</div>
+          <div class="h6 fw-bold mb-3">kg de CO2/año</div>
+          <div class="row g-3">
+            <div class="col-6">
+              <div class="border rounded p-3 h-100">
+                <i class="bi bi-tree-fill fs-3 d-block mb-1 text-success" aria-hidden="true"></i>
+                <span class="fs-4 fw-bold d-block" id="trees-needed">0</span>
+                <small class="text-muted d-block" style="font-size: 0.75rem;">Árboles necesarios al año</small>
               </div>
             </div>
-          </div>
-        </div>
-
-        <div class="row pt-4">
-          <div class="col-12">
-            <div class="d-flex gap-3 align-items-start pt-3">
-              <i class="bi bi-info-circle-fill text-primary fs-3" aria-hidden="true"></i>
-              <p class="small mb-0">
-                <strong>¿Qué podemos hacer?</strong> ¡Cosas muy sencillas! Vacía tu papelera de correo de vez en
-                cuando, cancela las suscripciones a boletines que no lees, no dejes videos reproduciéndose de fondo si
-                no los estás viendo, y haz limpieza de las fotos borrosas de tu celular. ¡Pequeños hábitos hacen una
-                gran diferencia mundial!
-              </p>
+            <div class="col-6">
+              <div class="border rounded p-3 h-100">
+                <i class="bi bi-car-front-fill fs-3 d-block mb-1 text-warning" aria-hidden="true"></i>
+                <span class="fs-4 fw-bold d-block" id="car-km">0</span>
+                <small class="text-muted d-block" style="font-size: 0.75rem;">Km en coche de gasolina</small>
+              </div>
             </div>
+          </div>          
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col-12">
+          <div class="border rounded p-3 d-flex gap-3 align-items-start">
+            <i class="bi bi-info-circle-fill text-primary fs-3 flex-shrink-0" aria-hidden="true"></i>
+            <p class="small mb-0">
+              <strong>¿Qué podemos hacer?</strong> ¡Cosas muy sencillas! Vacía tu papelera de correo de vez en
+              cuando, cancela las suscripciones a boletines que no lees, no dejes videos reproduciéndose de fondo si
+              no los estás viendo, y haz limpieza de las fotos borrosas de tu celular. ¡Pequeños hábitos hacen una
+              gran diferencia mundial!
+            </p>
           </div>
         </div>
       </div>
@@ -143,64 +128,49 @@
   </main>
 
   <footer></footer>
-
-  <!-- Script de la lógica -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Elementos de entrada (sliders)
       const inputEmails = document.getElementById('input-emails');
       const inputStreaming = document.getElementById('input-streaming');
       const inputCloud = document.getElementById('input-cloud');
 
-      // Elementos donde mostramos los valores de los sliders
       const valEmails = document.getElementById('val-emails');
       const valStreaming = document.getElementById('val-streaming');
       const valCloud = document.getElementById('val-cloud');
 
-      // Elementos de los resultados
       const elTotalCO2 = document.getElementById('total-co2');
       const elTrees = document.getElementById('trees-needed');
       const elCarKm = document.getElementById('car-km');
 
-      // Función que hace las matemáticas
       function calcularHuella() {
-        // Obtener números de los sliders
         const emails = parseFloat(inputEmails.value);
         const streaming = parseFloat(inputStreaming.value);
         const cloud = parseFloat(inputCloud.value);
 
-        // Actualizar el texto encima de las barras
         valEmails.textContent = emails + ' correos';
         valStreaming.textContent = streaming + ' horas';
         valCloud.textContent = cloud + ' GB';
 
-        // Cálculos (aproximados)
         const co2Emails = emails * 0.01;
         const co2Streaming = streaming * 365 * 0.055;
         const co2Cloud = cloud * 2;
 
         const totalCO2 = co2Emails + co2Streaming + co2Cloud;
 
-        // Mostrar resultados
         elTotalCO2.textContent = totalCO2.toFixed(1);
-
-        // Equivalencias
-        // Un árbol absorbe ~21 kg de CO2/año
         elTrees.textContent = Math.ceil(totalCO2 / 21);
-
-        // Un coche emite ~0.12 kg de CO2/km
         elCarKm.textContent = Math.round(totalCO2 / 0.12);
       }
 
-      // Escuchar cada vez que el usuario mueve una barra
       inputEmails.addEventListener('input', calcularHuella);
       inputStreaming.addEventListener('input', calcularHuella);
       inputCloud.addEventListener('input', calcularHuella);
 
-      // Calcular la primera vez que se carga la página
       calcularHuella();
     });
   </script>
+
+  <script type="module" src="bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

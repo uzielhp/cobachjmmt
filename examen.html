@@ -111,8 +111,7 @@
         HOJA = datosAdm[sessionStorage.getItem('Examen')];
         if (!HOJA) { msgError("Error al conectarse Hoja Semestre"); return; }        
 
-        const data = await llamarHojaExamen(HOJA);  
-        console.log(HOJA);
+        const data = await llamarHojaExamen(HOJA);        
 
         // Imágenes por examen
         const carpetaImagenes = 'imgs/examen/';
@@ -184,8 +183,7 @@
           msgError("Error al cargar las preguntas (No hay ninguna)");
         }
       }
-      catch (e) {
-        console.log(e);
+      catch (e) {        
         msgError("Error al cargar las preguntas");
       }
       finally { msgCargando(false); }      

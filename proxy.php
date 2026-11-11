@@ -20,10 +20,7 @@
       $ch = curl_init();
       curl_setopt($ch, CURLOPT_URL, $urlDestino);
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-      curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-      
-      // LÍNEA CLAVE: Evita que cURL pierda el POST y el cuerpo al seguir la redirección 302 de Google
-      curl_setopt($ch, CURLOPT_POSTREDIR, 7);
+      curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);      
 
       if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           curl_setopt($ch, CURLOPT_POST, true);
