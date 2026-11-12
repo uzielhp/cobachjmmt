@@ -38,7 +38,12 @@ class HMenu extends HTMLElement {
     </a>
   </div>
   <div class="menu" id="mnExamenes">
-    <a class="menu-item" href="200_Act10.html">Actividad 10 Contaminación digital</a>     
+    <div class="submenu">
+      <button class="menu-item" type="button">Cultura Digital 1</button>
+      <div class="menu">
+        <a class="menu-item" href="200_Act10.html">Act Contaminación digital</a>     
+      </div>
+    </div>
     <hr class="menu-divider">
     <a class="menu-item" href="examen.html" data-hoja="s100">Examen 100s</a>
     <a class="menu-item" href="examen.html" data-hoja="s200">Examen 200s</a>
@@ -54,6 +59,7 @@ customElements.define('h-menu', HMenu);
 
 document.addEventListener('DOMContentLoaded', async () => {
   await Dialogs();
+  verificarInternetMonitoreo();
   
   try {    
     msgCargando(true);
@@ -383,34 +389,43 @@ async function llamarHojaExamen(hoja = null, metodo = 'GET', datosA = null) {
   }
 }
 
-// Verifica si el cliente tiene acceso real a internet.
-async function verificarConexiónInternet() {  
+async function verificarInternet() {
   // Si el navegador ya detecta que está offline, ahorramos la petición
-  if (!navigator.onLine) return false;
+  if (!navigator.onLine) return false;  
 
   const controller = new AbortController();
   const timeoutPromise = new Promise((_, reject) => 
     setTimeout(() => {
-      controller.abort(); // Cancelamos el fetch pendiente para liberar recursos
-      reject(new Error('Timeout de red'));
+      controller.abort(); reject(new Error('Timeout de red')); 
     }, 3000)
   );
 
   try {    
-    // Opcional: puedes usar tu propio proxy o un archivo ligero de tu servidor 
-    // en lugar de google.com para evitar bloqueos de red escolar.
     await Promise.race([
       fetch('https://www.google.com/favicon.ico', { 
-        mode: 'no-cors', 
-        cache: 'no-store', 
-        signal: controller.signal 
-      }), 
-      timeoutPromise 
+        mode: 'no-cors', cache: 'no-store', signal: controller.signal 
+      }), timeoutPromise
     ]);
 
     return true;  
   }
-  catch (error) { 
-    return false; 
+  catch (error) { return false; }
+}
+
+function verificarInternetMonitoreo() {  
+  async function cicloVerificacion() {
+    let bol = false;
+    if (await verificarInternet()) {      
+      msgError("Desconecta los datos...");
+      bol = true;
+    } 
+    toggleD('h-cargando', bol);
+    toggleD('h-menu', !bol);
+    toggleD('main', !bol);
+    // Espera 5 segundos que termine para volver a verificar
+    setTimeout(cicloVerificacion, 5000);    
   }
+
+  // Arrancar el primer ciclo
+  cicloVerificacion();
 }

@@ -111,7 +111,8 @@
         HOJA = datosAdm[sessionStorage.getItem('Examen')];
         if (!HOJA) { msgError("Error al conectarse Hoja Semestre"); return; }        
 
-        const data = await llamarHojaExamen(HOJA);        
+        const data = await llamarHojaExamen(HOJA);
+        if(data.status="error"){ msgError("Error al conectarse Hoja Semestre"); return; }
 
         // Imágenes por examen
         const carpetaImagenes = 'imgs/examen/';
@@ -176,7 +177,7 @@
         const container = document.getElementById('preguntasContainer');
         if (htmlContent) {
           container.innerHTML = htmlContent;
-          submitBtn.classList.remove("theme-secondary"); submitBtn.classList.add("theme-primary"); submitBtn.removeAttribute('disabled');
+          submitBtn.classList.remove("theme-secondary"); submitBtn.classList.add("theme-primary"); submitBtn.disabled = false;
           examenTerminado = false;
         }
         else {
@@ -230,11 +231,11 @@
           inputs.forEach(input => input.disabled = true);
           
           msgError("¡Tus respuestas se han enviado");
+          submitBtn.classList.add("theme-secondary"); submitBtn.classList.remove("theme-primary"); submitBtn.disabled = true;
         }
       }
       catch (e) { msgError('Error al enviar las respuestas'); }
-      finally {
-        submitBtn.classList.remove("theme-secondary"); submitBtn.classList.add("theme-primary"); submitBtn.removeAttribute('disabled');
+      finally {        
         msgCargando(false);
       }
     });
