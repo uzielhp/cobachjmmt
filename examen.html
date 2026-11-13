@@ -32,7 +32,7 @@
         <div class="container mb-3 border rounded p-3">
           <div class="row row-cols-1">
             <div class="col">
-              <h5 class="pb-2" style="color: var(--bg-titulo);">
+              <h5 class="pb-2" style="color: var(--bg-titulo); font-weight: bold;">
                 <i class="bi bi-mortarboard-fill"></i> Datos del Alumno
               </h5>
             </div>
@@ -76,7 +76,7 @@
         <div class="container mb-3 border rounded p-3">
           <div class="row row-cols-1">
             <div class="col">
-              <h5 class="pb-2" style="color: var(--bg-titulo);">
+              <h5 class="pb-2" style="color: var(--bg-titulo); font-weight: bold;">
                 <i class="bi bi-patch-question-fill"></i> Preguntas
               </h5>
             </div>
@@ -108,11 +108,12 @@
       try {        
         msgCargando(true);
         const datosAdm = obtenerDatosAdm();
-        HOJA = datosAdm[sessionStorage.getItem('Examen')];
+        HOJA = datosAdm[sessionStorage.getItem('Examen')];        
         if (!HOJA) { msgError("Error al conectarse Hoja Semestre"); return; }        
 
         const data = await llamarHojaExamen(HOJA);
-        if(data.status="error"){ msgError("Error al conectarse Hoja Semestre"); return; }
+        console.log(data);  
+        //if(data.status="error"){ msgError("Error al conectarse Hoja Semestre"); return; }
 
         // Imágenes por examen
         const carpetaImagenes = 'imgs/examen/';
@@ -185,6 +186,7 @@
         }
       }
       catch (e) {        
+        console.log(e);
         msgError("Error al cargar las preguntas");
       }
       finally { msgCargando(false); }      

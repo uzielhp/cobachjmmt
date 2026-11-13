@@ -59,18 +59,17 @@ customElements.define('h-menu', HMenu);
 
 document.addEventListener('DOMContentLoaded', async () => {
   await Dialogs();
-  verificarInternetMonitoreo();
+  //verificarInternetMonitoreo();
   
   try {    
-    msgCargando(true);
-    await llamarDatosAdm();
+    msgCargando(true);        
+    await llamarDatosAdm();    
     const datosAdm = obtenerDatosAdm();    
     mnExamenes.style.visibility = (datosAdm.Menu === true) ? 'visible' : 'hidden';
     if (window.location.pathname.split('/').pop() === "Examen.html" && datosAdm === "false") {
       window.location.href = "index.html";
       return;
     }
-    //if(await verificarConexiónInternet()){ msgError("Hay conexión a internet"); }    
   }
   catch (e) { msgError("Error en cargar página"); }
   finally {    
@@ -330,25 +329,26 @@ function obtenerDatosAdm() {
   return datos ? JSON.parse(datos) : null;
 }
 
-async function llamarDatosAdm() {
-  const respuesta = await llamarAppScript();
+async function llamarDatosAdm() {  
+  const respuesta = await llamarAppScript();  
   if (respuesta) {
     sessionStorage.setItem('ExamenesURLS', JSON.stringify(respuesta));
   }
 }
 
 async function llamarAppScript(metodo = 'GET', datosA = null){
-  try {        
+  try {    
     // Codificamos directamente la URL del Apps Script para enviarla de forma segura por GET
     const urlAppScript = "https://script.google.com/macros/s/AKfycbz0iGDEYGtfo4CPabcbB5WsOVEv40RbIVdz3aJ8ZFckHWVAEKMBb7Cd6YQVo3tMLLeU/exec";
     let url = `${CONEXION}?target=${encodeURIComponent(urlAppScript)}`;    
     const opciones = { method: metodo, cache: 'no-store' };
-
+    
     if (metodo === 'POST' && datosA) {
       opciones.headers = { 'Content-Type': 'application/json' };
       opciones.body = JSON.stringify(datosA);
-    }
+    }        
     const response = await fetch(url, opciones);
+    console.log(response);
     return await response.json();    
   } 
   catch (e) {
@@ -359,7 +359,7 @@ async function llamarAppScript(metodo = 'GET', datosA = null){
 
 async function llamarHojaExamen(hoja = null, metodo = 'GET', datosA = null) {
   try {
-    const urlAppScript = "https://script.google.com/macros/s/AKfycbxuSiRSdg-q2rU_QOHCF__NMPltqdSdLAt7WJ6NAEoD7oy46bE_gkHBu5XrYRzvpDN7/exec";
+    const urlAppScript = "https://script.google.com/macros/s/AKfycbwUO4zX5hLIQV2EsYxaB3j79eHlzhQUJTWnWvlWT4r0KFS6N1zLki_DFvG_KM-tjhjN/exec";
     
     let url = `${CONEXION}?target=${encodeURIComponent(urlAppScript)}`;
 
