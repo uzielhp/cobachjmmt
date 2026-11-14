@@ -112,8 +112,8 @@
         if (!HOJA) { msgError("Error al conectarse Hoja Semestre"); return; }        
 
         const data = await llamarHojaExamen(HOJA);
-        console.log(data);  
-        //if(data.status="error"){ msgError("Error al conectarse Hoja Semestre"); return; }
+        console.log(data);
+        if(data.status="error"){ msgError("Error al conectarse Hoja Semestre"); return; }
 
         // Imágenes por examen
         const carpetaImagenes = 'imgs/examen/';
@@ -182,12 +182,11 @@
           examenTerminado = false;
         }
         else {
-          msgError("Error al cargar las preguntas (No hay ninguna)");
+          msgError("Error al cargar Preguntas (No hay ninguna)");
         }
       }
       catch (e) {        
-        console.log(e);
-        msgError("Error al cargar las preguntas");
+        msgError("Error al cargar Preguntas");
       }
       finally { msgCargando(false); }      
     });
@@ -236,7 +235,7 @@
           submitBtn.classList.add("theme-secondary"); submitBtn.classList.remove("theme-primary"); submitBtn.disabled = true;
         }
       }
-      catch (e) { msgError('Error al enviar las respuestas'); }
+      catch (e) { msgError('Error al enviar Respuestas'); }
       finally {        
         msgCargando(false);
       }

@@ -70,15 +70,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       window.location.href = "index.html";
       return;
     }
-  }
-  catch (e) { msgError("Error en cargar página"); }
-  finally {    
-    msgCargando(false);
 
+    msgCargando(false);
     toggleD('h-cargando', false);
     toggleD('h-menu', true);
-    toggleD('main', true);    
-  }  
+    toggleD('main', true);
+  }
+  catch (e) { msgError("Error en cargar Página"); }
 
   const dlgAdmin = document.getElementById('dialogAdmin');  
   const contra = document.getElementById('contra');
@@ -112,7 +110,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         contra.classList.add('is-invalid');
       }
     }
-    catch (e) { msgError("Error al validar contraseña"); }
+    catch (e) { msgError("Error al validar Contraseña"); }
     finally { msgCargando(false); }
   });
 
@@ -140,7 +138,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         msgAlerta("Configuraciones guardadas");        
       }      
     }
-    catch (e) { msgError("Error al guardar información"); }
+    catch (e) { msgError("Error al guardar Información"); }
     finally { msgCargando(false); }
   });
 
@@ -348,43 +346,34 @@ async function llamarAppScript(metodo = 'GET', datosA = null){
       opciones.body = JSON.stringify(datosA);
     }        
     const response = await fetch(url, opciones);
-    console.log(response);
     return await response.json();    
   } 
   catch (e) {
-    msgError("Error al conectarse con el servidor");
+    msgError("Error al conectarse Servidor");
     return null;
   }
 }
 
-async function llamarHojaExamen(hoja = null, metodo = 'GET', datosA = null) {
+async function llamarHojaExamen(hoja, metodo = 'GET', datosA = null) {
   try {
-    const urlAppScript = "https://script.google.com/macros/s/AKfycbwUO4zX5hLIQV2EsYxaB3j79eHlzhQUJTWnWvlWT4r0KFS6N1zLki_DFvG_KM-tjhjN/exec";
+    const urlAppScript = 
+    "https://script.google.com/macros/s/AKfycby7jvY9ZAsahskk-BcM9LB5IEiSQ_RecDTks_eVEXsNqX-qIz59UX41sBt0vPfoJQbv/exec";
     
     let url = `${CONEXION}?target=${encodeURIComponent(urlAppScript)}`;
-
-    if (metodo === 'GET' && hoja) {
-      url += `&spreadsheetId=${encodeURIComponent(hoja)}`;
-    }
-
+    url += `&spreadsheetId=${encodeURIComponent(hoja)}`;
     const opciones = { method: metodo, cache: 'no-store' };
-
     if (metodo === 'POST') {
       opciones.headers = { 'Content-Type': 'application/json' };
-      
-      // Preparamos el cuerpo y le inyectamos automáticamente el spreadsheetId si fue proporcionado
-      let payload = datosA || {};
-      if (hoja) {
-        payload.spreadsheetId = hoja;
+      if (datosA) {
+        opciones.body = JSON.stringify(datosA);
       }
-      opciones.body = JSON.stringify(payload);
     }
 
     const response = await fetch(url, opciones);
     return await response.json();    
   } 
   catch (e) {
-    msgError("Error al conectarse con el servidor");
+    msgError("Error al conectarse Hoja");
     return null;
   }
 }
@@ -416,7 +405,7 @@ function verificarInternetMonitoreo() {
   async function cicloVerificacion() {
     let bol = false;
     if (await verificarInternet()) {      
-      msgError("Desconecta los datos...");
+      msgError("Desconecta los datos con internet...");
       bol = true;
     } 
     toggleD('h-cargando', bol);
