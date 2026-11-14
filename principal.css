@@ -1,11 +1,70 @@
 :root {
   --bg-titulo: #FE6100;
-  --bg-texto: var(--bs-secondary-color);
+  --bg-texto: #CBD5E1;
   --bg-obsidian: #050507;
 }
 
 h-menu, main {
   display: none;
+}
+
+/*CONTENEDOR UNIFICADO (LOGO + HOVER + CARGA)*/
+.contenedor-logo {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/* IMPORTANTE: Forzamos que tanto la imagen .logo como CUALQUIER icono queden al frente */
+.contenedor-logo img.logo,
+.contenedor-logo i,
+.contenedor-logo .btmenuicono,
+.contenedor-logo [class*="bi-"] {
+  position: relative;
+  z-index: 2;
+}
+
+/* Cambio de color de los iconos al pasar el mouse */
+.contenedor-logo:hover .bi-chevron-expand,
+.contenedor-logo:hover .bi-grid-3x3-gap-fill {
+  color: var(--bg-titulo);
+  transition: color 0.2s ease-in-out;
+}
+
+/* Efecto de borde giratorio (Se activa por :hover o por la clase .is-loading) */
+.contenedor-logo:hover::before,
+.contenedor-logo.is-loading::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(transparent, transparent, transparent, var(--bg-titulo));
+  animation: girar-linea 2s linear infinite;
+}
+
+.contenedor-logo:hover::after,
+.contenedor-logo.is-loading::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background-color: var(--bg-obsidian);
+  border-radius: 4px;
+}
+
+/* Animación única de rotación */
+@keyframes girar-linea {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /*Protección para no seleccionar texto */
@@ -64,50 +123,6 @@ span {
 
 .glow {
   animation: glow 2s infinite;
-}
-
-/* EFECTO LOGO RECARGA */
-.contenedor-logo {
-  position: relative;
-  display: inline-flex;
-  padding: 5px;
-  border-radius: 5px;
-  overflow: hidden;
-}
-
-.contenedor-logo img.logo {
-  position: relative;
-  z-index: 1;
-  display: block;
-}
-
-.contenedor-logo.is-loading::before {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: conic-gradient(transparent, transparent, transparent, var(--bg-titulo));
-  animation: girar-linea 2s linear infinite;
-}
-
-.contenedor-logo.is-loading::after {
-  content: "";
-  position: absolute;
-  inset: 3px;
-  background-color: var(--bg-obsidian);
-  border-radius: 3px;
-}
-
-@keyframes girar-linea {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
 }
 
 /* GALERÍA DE INDEX */

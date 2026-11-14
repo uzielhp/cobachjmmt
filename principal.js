@@ -7,14 +7,9 @@ class HCargando extends HTMLElement {
   this.innerHTML = `
   <div class="fixed-top d-flex align-items-center justify-content-between bg-white placeholder-wave" style="height: 50px; padding: 0 5px;">
     <div class="nav-link d-inline-flex gap-2 bg-transparent border-0" data-bs-toggle="menu">        
-      <div class="contenedor-logo is-loading">
-        <span class="d-inline-flex align-items-center">            
-          <span style="height: 30px; width: 54px;"></span>
-          <i class="bi bi-chevron-expand" style="font-size: 1.5rem;"></i>
-        </span>
-      </div>
+      <div class="contenedor-logo is-loading" style="height: 45px; width: 80px; cursor: default;"></div>
     </div>
-    <span class="contenedor-logo is-loading d-inline-block bg-secondary rounded" style="height: 33px; width: 33px;" aria-hidden="true"></span>
+    <div class="contenedor-logo is-loading" style="height: 40px; width: 40px; cursor: default;"></div>
   </div>
   `;
   }
@@ -26,10 +21,10 @@ class HMenu extends HTMLElement {
   this.innerHTML = `
   <div class="fixed-top d-flex align-items-center gap-2 justify-content-between bg-black" style="height: 50px; padding: 0 5px;">
     <button class="nav-link d-inline-flex gap-2 bg-transparent border-0" data-bs-toggle="menu">        
-      <div id="msgC" class="contenedor-logo">
-        <span class="d-inline-flex align-items-center">            
-          <i class="bi bi-chevron-expand" style="font-size: 1.5rem;"></i>
-          <img class="logo" src="imgs/logo.png" alt="Logo" style="height: 30px; width: auto;">          
+      <div id="msgC" class="contenedor-logo">        
+        <span class="d-inline-flex align-items-center hover-grupo py-1 rounded">          
+          <i class="bi bi-grid-3x3-gap-fill" style="padding-right: 5px"></i>
+          <img class="logo" src="imgs/logo.png" alt="Logo" style="height: 30px; width: auto; padding-right: 5px">
         </span>
       </div>
     </button>
@@ -37,20 +32,22 @@ class HMenu extends HTMLElement {
       <img src="imgs/adm.png" alt="Admin" height="35">
     </a>
   </div>
-  <div class="menu" id="mnExamenes">
+  <div class="menu">
     <div class="submenu">
       <button class="menu-item" type="button">Cultura Digital 1</button>
       <div class="menu">
         <a class="menu-item" href="200_Act10.html">Act Contaminación digital</a>     
       </div>
     </div>
-    <hr class="menu-divider">
-    <a class="menu-item" href="examen.html" data-hoja="s100">Examen 100s</a>
-    <a class="menu-item" href="examen.html" data-hoja="s200">Examen 200s</a>
-    <a class="menu-item" href="examen.html" data-hoja="s300">Examen 300s</a>
-    <a class="menu-item" href="examen.html" data-hoja="s400">Examen 400s</a>
-    <a class="menu-item" href="examen.html" data-hoja="s500">Examen 500s</a>
-    <a class="menu-item" href="examen.html" data-hoja="s600">Examen 600s</a>
+    <div id="mnExamenes">
+      <hr class="menu-divider">
+      <a class="menu-item" href="examen.html" data-hoja="s100">Examen 100s</a>
+      <a class="menu-item" href="examen.html" data-hoja="s200">Examen 200s</a>
+      <a class="menu-item" href="examen.html" data-hoja="s300">Examen 300s</a>
+      <a class="menu-item" href="examen.html" data-hoja="s400">Examen 400s</a>
+      <a class="menu-item" href="examen.html" data-hoja="s500">Examen 500s</a>
+      <a class="menu-item" href="examen.html" data-hoja="s600">Examen 600s</a>
+    </div>
   </div>
   `;
   }
@@ -399,7 +396,7 @@ function verificarInternetMonitoreo() {
   let pvez = true;
 
   async function cicloVerificacion() {
-    const hayInternet = await verificarInternet();
+    const hayInternet = false;//await verificarInternet();
     if (hayInternet) {      
       msgError("Desconecta los datos con internet...");
     }
