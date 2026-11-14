@@ -58,8 +58,7 @@ class HMenu extends HTMLElement {
 customElements.define('h-menu', HMenu);
 
 document.addEventListener('DOMContentLoaded', async () => {
-  await Dialogs();
-  //verificarInternetMonitoreo();
+  await Dialogs();  
   
   try {    
     msgCargando(true);        
@@ -71,10 +70,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    msgCargando(false);
-    toggleD('h-cargando', false);
-    toggleD('h-menu', true);
-    toggleD('main', true);
+    verificarInternetMonitoreo();
   }
   catch (e) { msgError("Error en cargar Página"); }
 
@@ -114,8 +110,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     finally { msgCargando(false); }
   });
 
-  //const frmAdminDetalles = document.getElementById('frmAdminDetalles');
-  //frmAdminDetalles.addEventListener('submit', async e => {      
   const btnAdminDetallesAction = document.getElementById('btnAdminDetalles');
   btnAdminDetallesAction.addEventListener('click', async e => {
     try {      
@@ -402,15 +396,22 @@ async function verificarInternet() {
 }
 
 function verificarInternetMonitoreo() {  
+  let pvez = true;
+
   async function cicloVerificacion() {
-    let bol = false;
-    if (await verificarInternet()) {      
+    const hayInternet = await verificarInternet();
+    if (hayInternet) {      
       msgError("Desconecta los datos con internet...");
-      bol = true;
-    } 
-    toggleD('h-cargando', bol);
-    toggleD('h-menu', !bol);
-    toggleD('main', !bol);
+    }
+    else {
+      if (pvez){
+        msgCargando(false);
+        pvez = false;
+      }
+    }
+    toggleD('h-cargando', hayInternet);
+    toggleD('h-menu', !hayInternet);
+    toggleD('main', !hayInternet);
     // Espera 5 segundos que termine para volver a verificar
     setTimeout(cicloVerificacion, 5000);    
   }

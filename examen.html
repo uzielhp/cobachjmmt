@@ -44,7 +44,7 @@
                     <select class="form-control" required id="grupo" name="grupo">
                       <option value="" disabled selected>Grupo y turno</option>
                       <option value="101M">101M</option>
-                      <option value="102M">101M</option>
+                      <option value="102M">102M</option>
                       <option value="104V">104V</option>
                       <option value="301M">301M</option>
                       <option value="302M">302M</option>
@@ -112,8 +112,7 @@
         if (!HOJA) { msgError("Error al conectarse Hoja Semestre"); return; }        
 
         const data = await llamarHojaExamen(HOJA);
-        console.log(data);
-        if(data.status="error"){ msgError("Error al conectarse Hoja Semestre"); return; }
+        if(data.status == "error"){ msgError("Error al conectarse Hoja Semestre"); return; }
 
         // Imágenes por examen
         const carpetaImagenes = 'imgs/examen/';
